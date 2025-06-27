@@ -14,14 +14,21 @@ class RepositoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->searchable(),
+                TextColumn::make('no')
+                    ->label('No.')
+                    ->rowIndex(),
+                TextColumn::make('user.name')
+                    ->label('Pemilik')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable(),
                 TextColumn::make('github_owner')
+                    ->label('Owner')
                     ->searchable(),
                 TextColumn::make('github_repo')
+                    ->label('Repo')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
