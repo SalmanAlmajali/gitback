@@ -18,7 +18,13 @@ class RepositoryResource extends Resource
 {
     protected static ?string $model = Repository::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::FolderOpen;
+
+    protected static ?string $navigationLabel = 'Repositori GitHub';
+
+    protected static ?string $pluralLabel = 'Repositori';
+    
+    protected static ?string $modelLabel = 'Repositori';
 
     public static function form(Schema $schema): Schema
     {
