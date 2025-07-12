@@ -2,7 +2,7 @@ import React from 'react'
 import { PageTitle } from '../layout'
 import Search from '@/components/ui/search'
 import Table from '@/components/ui/table'
-import { fetchFilteredRepositories } from '@/lib/data';
+import { fetchFilteredRepositories, fetchFilteredRepositoriesFromLocal } from '@/lib/data';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -69,7 +69,7 @@ async function Page({
 				query={query}
 				currentPage={currentPage}
 				tableHead={tableHead}
-				fetchFilteredFunction={fetchFilteredRepositories}
+				fetchFilteredFunction={fetchFilteredRepositoriesFromLocal}
 			/>
 		</div>
 	)

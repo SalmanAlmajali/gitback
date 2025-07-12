@@ -1,17 +1,18 @@
 import postgres from "postgres";
 import { RepositoriesTable, RepositoryForm } from "./definitions";
+import { mockUpRepositories, mockUpUsers } from "./placeholders-data";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 const ITEMS_PER_PAGE = 10;
 
 export async function fetchFilteredRepositories(
-    query: string,
-    currentPage: number,
+	query: string,
+	currentPage: number,
 ) {
-    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+	const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-    try {
-        const repositories = await sql<RepositoriesTable[]>`
+	try {
+		const repositories = await sql<RepositoriesTable[]>`
             SELECT
                 repositories.id,
                 repositories.name,
@@ -32,16 +33,42 @@ export async function fetchFilteredRepositories(
             ORDER BY repositories.created_at DESC
             LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
             `;
-        return repositories
-    } catch (error) {
-        console.error('Database Error:', error);
-        throw new Error('Failed to fetch repositories.');
-    }
+		return repositories
+	} catch (error) {
+		console.error('Database Error:', error);
+		throw new Error('Failed to fetch repositories.');
+	}
+}
+
+export async function fetchFilteredRepositoriesFromLocal(
+	query: string,
+	currentPage: number,
+) {
+	try {
+		await new Promise((resolve) => setTimeout(resolve, 100));
+		const data = mockUpRepositories;
+
+		const repositories = data.map((repository) => {
+			const user = mockUpUsers.find(user => user.id === repository.user_id)
+
+			console.log({ ...repository });
+
+			return ({
+				...repository,
+				username: user?.name,
+				email: user?.email,
+			})
+		});
+		return repositories;
+	} catch (error) {
+		console.error('Fetch Error:', error);
+		throw new Error('Failed to fetch repositories.');
+	}
 }
 
 export async function fetchRepositoryById(id: string) {
-  try {
-    const repository = await sql<RepositoryForm[]>`
+	try {
+		const repository = await sql<RepositoryForm[]>`
       SELECT
         repositories.id,
         repositories.user_id,
@@ -52,9 +79,21 @@ export async function fetchRepositoryById(id: string) {
       WHERE repositories.id = ${id};
     `;
 
-    return repository[0];
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch selected repository.');
-  }
+		return repository[0];
+	} catch (error) {
+		console.error('Database Error:', error);
+		throw new Error('Failed to fetch selected repository.');
+	}
+}
+
+export async function fetchRepositoryByIdFromLocal(id: string) {
+	try {
+		await new Promise((resolve) => setTimeout(resolve, 100));
+		const repository = mockUpRepositories.find(repo => repo.id === id);
+
+		return repository;
+	} catch (error) {
+		console.error('Fetch Error:', error);
+		throw new Error('Failed to fetch selected repository.');
+	}
 }

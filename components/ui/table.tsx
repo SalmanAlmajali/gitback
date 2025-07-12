@@ -20,7 +20,7 @@ export default async function Table({
         key: string,
         type: string,
     }[];
-    fetchFilteredFunction: (query: string, currentPage: number) => Promise<RowList<RepositoriesTable[]>> | Promise<RowList<Row[]>>;
+    fetchFilteredFunction: (query: string, currentPage: number) => Promise<RowList<RepositoriesTable[]>> | Promise<RowList<Row[]>> | Promise<RepositoriesTable[]>;
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
 
