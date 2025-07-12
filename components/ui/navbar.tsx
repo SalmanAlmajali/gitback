@@ -6,7 +6,6 @@ import Link from 'next/link'
 import clsx from 'clsx';
 import { ThemeSwitcher } from './theme-switcher';
 import { usePathname } from 'next/navigation';
-import { label } from 'framer-motion/client';
 import LinkButton from './link-button';
 
 function Navbar() {
@@ -14,6 +13,10 @@ function Navbar() {
         {
             label: 'Home',
             href: '/'
+        },
+        {
+            label: 'Dashboard',
+            href: '/dashboard'
         },
     ];
 
@@ -36,7 +39,7 @@ function Navbar() {
                             },
                         )}>
                             <NavLabel
-                                label='Home'
+                                label={item?.label}
                                 pathname={pathname}
                                 href={item?.href}
                             />
