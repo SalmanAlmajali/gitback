@@ -1,10 +1,12 @@
-import Hero from '@/components/Hero'
-import Features from '@/components/Features'
-import Footer from '@/components/Footer'
+import Features from "@/components/ui/features";
+import Footer from "@/components/ui/footer";
+import Hero from "@/components/ui/hero";
+import Navbar from "@/components/ui/navbar";
 
 export default function HomePage() {
   return (
-    <main className="bg-white text-gray-800">
+    <main className="bg-white dark:bg-black">
+      <Navbar />
       <Hero />
       <Features />
       <Footer />
