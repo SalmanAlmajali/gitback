@@ -107,14 +107,14 @@ export default async function Table({
                                                     case 'date':
                                                         return (
                                                             <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
-                                                                {new Date((tr as Record<string, any>)?.[td.key]).toLocaleDateString()}
+                                                                {new Date((tr as Record<string, string>)?.[td.key]).toLocaleDateString()}
                                                             </td>
                                                         )
 
                                                     default:
                                                         return (
                                                             <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
-                                                                {(tr as Record<string, any>)?.[td.key]}
+                                                                {(tr as Record<string, string>)?.[td.key]}
                                                             </td>
                                                         )
                                                 }
