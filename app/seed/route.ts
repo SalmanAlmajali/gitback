@@ -26,7 +26,7 @@ async function migrateTable(props: {
 
 export async function GET() {
     try {
-        const result = await sql.begin((sql) => [
+        await sql.begin(() => [
             migrateTable({
                 tableName: 'users',
                 query: `
