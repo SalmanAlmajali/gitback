@@ -1,4 +1,3 @@
-import { figtree } from '@/components/fonts'
 import { Metadata } from 'next'
 import React from 'react'
 import { PageTitle } from './layout'
