@@ -1,8 +1,7 @@
 import React from 'react'
 import { PageTitle } from '../layout'
-import Search from '@/components/ui/search'
 import Table from '@/components/ui/table'
-import { fetchFilteredRepositories, fetchFilteredRepositoriesFromLocal } from '@/lib/data';
+import { fetchFilteredRepositoriesFromLocal } from '@/lib/data';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
