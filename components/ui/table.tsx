@@ -1,9 +1,9 @@
-import { RepositoriesTable } from '@/app/lib/definitions';
 import { IconPencil } from '@tabler/icons-react';
 import Link from 'next/link';
 import { Row, RowList } from 'postgres';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
+import { RepositoriesTable } from '@/lib/definitions';
 
 export default async function Table({
     pageName,

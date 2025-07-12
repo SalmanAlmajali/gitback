@@ -45,10 +45,13 @@ export async function fetchFilteredRepositoriesFromLocal(
 	currentPage: number,
 ) {
 	try {
+		console.log(query);
+		console.log(currentPage);
+		
 		await new Promise((resolve) => setTimeout(resolve, 100));
 		const data = mockUpRepositories;
 
-		const repositories = data.map((repository) => {
+		const repositories = <RepositoriesTable[]>data.map((repository) => {
 			const user = mockUpUsers.find(user => user.id === repository.user_id)
 
 			console.log({ ...repository });
