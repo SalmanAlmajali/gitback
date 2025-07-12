@@ -62,7 +62,7 @@ async function Page({
 		<div>
 			<PageTitle title='Repositories' />
 			<div className="flex items-center justify-between gap-2 md:mt-8">
-				<Search placeholder='Search repositories...' />
+				{/* <Search placeholder='Search repositories...' /> */}
 			</div>
 			<Table
 				pageName={'Repositories'}
