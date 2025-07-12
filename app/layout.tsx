@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { figtree, jetBrainsMono } from "@/components/fonts";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import Navbar from "@/components/ui/navbar";
 
 export const metadata: Metadata = {
   title: {
