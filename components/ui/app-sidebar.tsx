@@ -4,7 +4,6 @@ import * as React from "react"
 import {
     IconBookmarks,
     IconDashboard,
-    IconInnerShadowTop,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/ui/nav-main"
