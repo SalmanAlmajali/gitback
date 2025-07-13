@@ -1,9 +1,10 @@
-import { IconPencil } from '@tabler/icons-react';
+import { IconPencil, IconTrash } from '@tabler/icons-react';
 import Link from 'next/link';
 import { Row, RowList } from 'postgres';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
 import { RepositoriesTable } from '@/lib/definitions';
+import clsx from 'clsx';
 
 export default async function Table({
     pageName,
@@ -24,11 +25,8 @@ export default async function Table({
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
 
-    console.log(datas);
-
-
     return (
-        <div className="mt-6 flow-root">
+        <div className="mt-6 flow-root overflow-x-scroll rounded-xl no-scrollbar">
             <div className="inline-block min-w-full align-middle">
                 <div className="rounded-lg bg-neutral-100 dark:bg-neutral-900 p-2 md:pt-0">
                     <div className="md:hidden">
@@ -79,7 +77,7 @@ export default async function Table({
                                     tableHead?.map((item, i) => (
                                         <th
                                             scope="col"
-                                            className="px-3 py-5 font-medium"
+                                            className={`${figtree.className} px-3 py-5 font-semibold tracking-tight text-balance`}
                                             key={i}
                                         >
                                             {item?.label}
@@ -91,29 +89,43 @@ export default async function Table({
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-black">
+                        <tbody>
                             {
                                 datas?.map((tr, i) => (
                                     <tr
                                         key={tr.id}
-                                        className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                                        className="w-full border-b py-3 text-sm last-of-type:border-none"
                                     >
                                         <td className="whitespace-nowrap px-3 py-3">
                                             {i + 1}.
                                         </td>
                                         {
-                                            tableHead?.map(td => {
+                                            tableHead?.map((td, index) => {
                                                 switch (td?.type) {
                                                     case 'date':
                                                         return (
-                                                            <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
+                                                            <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
+                                                                {
+                                                                    "rounded-l-lg": index === 0
+                                                                },
+                                                                {
+                                                                    "rounded-r-xl": index === tableHead?.length - 1
+                                                                },
+                                                            )} key={td?.key}>
                                                                 {new Date((tr as Record<string, string>)?.[td.key]).toLocaleDateString()}
                                                             </td>
                                                         )
 
                                                     default:
                                                         return (
-                                                            <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
+                                                            <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
+                                                                {
+                                                                    "rounded-l-xl": index === 0
+                                                                },
+                                                                {
+                                                                    "rounded-r-xl": index === tableHead?.length - 1
+                                                                },
+                                                            )} key={td?.key}>
                                                                 {(tr as Record<string, string>)?.[td.key]}
                                                             </td>
                                                         )
@@ -123,6 +135,7 @@ export default async function Table({
                                         <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                             <div className="flex justify-end gap-3">
                                                 <Update id={tr?.id} pageName={pageName} />
+                                                <Delete id={tr?.id} pageName={pageName} />
                                             </div>
                                         </td>
                                     </tr>
@@ -139,8 +152,17 @@ export default async function Table({
 const Update = ({ id, pageName }: { id: string, pageName: string }) => (
     <Link
         href={`/dashboard/${pageName.toLowerCase()}/${id}/edit`}
-        className="rounded-md border p-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+        className="rounded-md border p-2 bg-blue-500 hover:bg-blue-700 transition-colors"
     >
-        <IconPencil className="w-5" />
+        <IconPencil className="w-5 text-white" />
+    </Link>
+)
+
+const Delete = ({ id, pageName }: { id: string, pageName: string }) => (
+    <Link
+        href={`/dashboard/${pageName.toLowerCase()}/${id}/edit`}
+        className="rounded-md border p-2 bg-red-500 hover:bg-red-700 transition-colors"
+    >
+        <IconTrash className="w-5 text-white" />
     </Link>
 )
