@@ -1,8 +1,9 @@
 import React from 'react'
 import { PageTitle } from '../layout'
 import Table from '@/components/ui/table'
-import { fetchFilteredRepositoriesFromLocal } from '@/lib/data';
+import { fetchFilteredRepositories } from '@/lib/data';
 import { Metadata } from 'next';
+import Search from '@/components/ui/search';
 
 export const metadata: Metadata = {
 	title: "Repositories"
@@ -61,14 +62,14 @@ async function Page({
 		<div>
 			<PageTitle title='Repositories' />
 			<div className="flex items-center justify-between gap-2 md:mt-8">
-				{/* <Search placeholder='Search repositories...' /> */}
+				<Search placeholder='Search repositories...' />
 			</div>
 			<Table
 				pageName={'Repositories'}
 				query={query}
 				currentPage={currentPage}
 				tableHead={tableHead}
-				fetchFilteredFunction={fetchFilteredRepositoriesFromLocal}
+				fetchFilteredFunction={fetchFilteredRepositories}
 			/>
 		</div>
 	)

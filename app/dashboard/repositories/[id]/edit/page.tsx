@@ -1,5 +1,5 @@
 import { Breadcrumbs } from '@/app/dashboard/layout'
-import { fetchRepositoryByIdFromLocal } from '@/lib/data'
+import { fetchRepositoryById } from '@/lib/data'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import React from 'react'
@@ -12,7 +12,7 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 	const params = await props.params;
 	const id = params.id;
 
-	const repository = await fetchRepositoryByIdFromLocal(id);
+	const repository = await fetchRepositoryById(id);
 
 	if (!repository) {
 		notFound();
