@@ -14,10 +14,6 @@ function Navbar() {
             label: 'Home',
             href: '/'
         },
-        {
-            label: 'Dashboard',
-            href: '/dashboard'
-        },
     ];
 
     const pathname = usePathname()

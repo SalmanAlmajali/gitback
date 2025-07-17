@@ -7,8 +7,8 @@ import {
     IconInnerShadowTop,
 } from "@tabler/icons-react"
 
-import { NavMain } from "@/components/ui/nav-main"
-import { NavUser } from "@/components/ui/nav-user"
+import { NavMain } from "@/components/ui/layout/sidebar/nav-main"
+import { NavUser } from "@/components/ui/layout/sidebar/nav-user"
 import {
     Sidebar,
     SidebarContent,
@@ -17,9 +17,9 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { figtree } from "../fonts"
+} from "@/components/ui/layout/sidebar/sidebar"
 import Link from "next/link"
+import { figtree } from "@/components/fonts"
 
 const data = {
     user: {

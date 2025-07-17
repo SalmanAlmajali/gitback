@@ -1,6 +1,6 @@
 import { figtree } from '@/components/fonts'
 import { AppSidebar } from '@/components/ui/app-sidebar'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/layout/sidebar/sidebar'
 import { SiteHeader } from '@/components/ui/site-header'
 import { Breadcrumb } from '@/lib/definitions'
 import clsx from 'clsx'

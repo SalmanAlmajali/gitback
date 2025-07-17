@@ -1,7 +1,7 @@
 import Features from "@/components/ui/features";
-import Footer from "@/components/ui/footer";
+import Footer from "@/components/ui/layout/footer";
 import Hero from "@/components/ui/hero";
-import Navbar from "@/components/ui/navbar";
+import Navbar from "@/components/ui/layout/navbar";
 
 export default function HomePage() {
   return (
