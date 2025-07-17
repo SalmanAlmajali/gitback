@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/layout/sidebar/sidebar"
 import Link from "next/link"
 import { figtree } from "@/components/fonts"
+import { SvgIcon } from "../../application-logo"
 
 const data = {
     user: {
@@ -52,7 +53,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
                             <Link href={'/'} className={figtree.className}>
-                                <IconInnerShadowTop className="!size-5" />
+                                <SvgIcon className="!size-6" />
                                 <span className="text-base font-semibold">Gitback</span>
                             </Link>
                         </SidebarMenuButton>

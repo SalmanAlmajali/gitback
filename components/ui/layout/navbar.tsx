@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { figtree } from '@/components/fonts';
 import LinkButton from '../link-button';
 import { ThemeSwitcher } from '../theme/theme-switcher';
+import ApplicationLogo from '../application-logo';
 
 function Navbar() {
     const navs = [
@@ -22,7 +23,7 @@ function Navbar() {
         <nav className='fixed w-full mt-4 flex justify-center'>
             <div className='max-w-5xl w-full py-3 px-8 rounded-full bg-accent/5 backdrop-blur-sm ring ring-accent flex justify-between items-center shadow-2xl'>
                 <Link href={'/'} className={`${figtree.className} text-2xl font-bold`}>
-                    Gitback
+                    <ApplicationLogo />
                 </Link>
                 <div className='text-sm flex items-center gap-x-10'>
                     {navs?.map((item, i) => (
