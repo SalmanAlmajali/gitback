@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/ui/login-form"
+import { LoginForm } from "@/components/ui/login/login-form"
 import LetterGlitch from "@/components/blocks/Backgrounds/LetterGlitch/LetterGlitch"
 import { Metadata } from "next"
 

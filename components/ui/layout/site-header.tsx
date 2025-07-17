@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { ThemeSwitcher } from "./theme-switcher"
+import { SidebarTrigger } from "@/components/ui/layout/sidebar/sidebar"
+import { ThemeSwitcher } from "../theme/theme-switcher"
 
 export function SiteHeader() {
     return (

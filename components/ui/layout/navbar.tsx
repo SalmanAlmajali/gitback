@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react'
-import { figtree } from '../fonts'
+import { figtree } from '../../fonts'
 import Link from 'next/link'
 import clsx from 'clsx';
-import { ThemeSwitcher } from './theme-switcher';
+import { ThemeSwitcher } from '../theme/theme-switcher';
 import { usePathname } from 'next/navigation';
-import LinkButton from './link-button';
-import ApplicationLogo from './application-logo';
+import LinkButton from '../link-button';
+import ApplicationLogo from '../application-logo';
 
 function Navbar() {
     const navs = [

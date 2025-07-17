@@ -6,8 +6,7 @@ import {
     IconDashboard,
 } from "@tabler/icons-react"
 
-import { NavMain } from "@/components/ui/nav-main"
-import { NavUser } from "@/components/ui/nav-user"
+import { NavMain } from "@/components/ui/layout/sidebar/nav-main"
 import {
     Sidebar,
     SidebarContent,
@@ -16,10 +15,11 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { figtree } from "../fonts"
+} from "@/components/ui/layout/sidebar/sidebar"
+import { figtree } from "../../../fonts"
 import Link from "next/link"
-import { SvgIcon } from "./application-logo"
+import { SvgIcon } from "../../application-logo"
+import { NavUser } from "./nav-user"
 
 const data = {
     user: {

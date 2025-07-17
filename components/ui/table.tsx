@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Row, RowList } from 'postgres';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
-import { RepositoriesTable } from '@/lib/definitions';
 import clsx from 'clsx';
+import { RepositoriesTable } from '@/app/lib/repositories/definitions';
 
 export default async function Table({
     pageName,
@@ -94,7 +94,7 @@ export default async function Table({
                                 datas?.map((tr, i) => (
                                     <tr
                                         key={tr.id}
-                                        className="w-full border-b py-3 text-sm last-of-type:border-none"
+                                        className="w-full py-3 text-sm last-of-type:border-none"
                                     >
                                         <td className="whitespace-nowrap px-3 py-3">
                                             {i + 1}.
@@ -106,10 +106,12 @@ export default async function Table({
                                                         return (
                                                             <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
                                                                 {
-                                                                    "rounded-l-lg": index === 0
-                                                                },
-                                                                {
-                                                                    "rounded-r-xl": index === tableHead?.length - 1
+                                                                    "rounded-l-xl": index === 0 && i === 0,
+                                                                    "rounded-tl-xl": index === 0 && i === 0 && datas?.length > 1,
+                                                                    "rounded-r-xl": index === tableHead.length - 1 && datas.length === 1,
+                                                                    "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
+                                                                    "rounded-bl-xl": index === 0 && i === datas.length - 1,
+                                                                    "rounded-br-xl": index === tableHead?.length - 1 && i === datas.length - 1,
                                                                 },
                                                             )} key={td?.key}>
                                                                 {new Date((tr as Record<string, string>)?.[td.key]).toLocaleDateString()}
@@ -120,10 +122,12 @@ export default async function Table({
                                                         return (
                                                             <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
                                                                 {
-                                                                    "rounded-l-xl": index === 0
-                                                                },
-                                                                {
-                                                                    "rounded-r-xl": index === tableHead?.length - 1
+                                                                    "rounded-l-xl": index === 0 && i === 0 && datas.length === 1,
+                                                                    "rounded-tl-xl": index === 0 && i === 0,
+                                                                    "rounded-r-xl": index === tableHead.length - 1 && datas.length === 1,
+                                                                    "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
+                                                                    "rounded-bl-xl": index === 0 && i === datas.length - 1,
+                                                                    "rounded-br-xl": index === tableHead?.length - 1 && i === datas.length - 1,
                                                                 },
                                                             )} key={td?.key}>
                                                                 {(tr as Record<string, string>)?.[td.key]}
