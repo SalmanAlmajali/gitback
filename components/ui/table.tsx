@@ -60,7 +60,8 @@ export default async function Table({
                                             <p className="text-xl font-medium">{repository.github_repo}</p>
                                         </div>
                                         <div className="flex justify-end gap-2">
-                                            <Update id={repository.id} pageName={pageName} />
+                                            <Update id={repository?.id} pageName={pageName} />
+                                            <Delete id={repository?.id} pageName={pageName} />
                                         </div>
                                     </div>
                                 </div>

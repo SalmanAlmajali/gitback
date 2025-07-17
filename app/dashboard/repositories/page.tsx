@@ -232,7 +232,18 @@ function Page() {
 													<p className="text-xl font-medium">{repository.github_repo}</p>
 												</div>
 												<div className="flex justify-end gap-2">
-
+													<button
+														onClick={() => handleEdit(repository)}
+														className="rounded-md border p-2 bg-blue-500 hover:bg-blue-700repositoriesansition-colors cursor-pointer"
+													>
+														<IconPencil className="w-5 text-white" />
+													</button>
+													<button
+														onClick={() => handleDelete(repository.id)}
+														className="rounded-md border p-2 bg-red-500 hover:bg-red-700 transition-colors cursor-pointer"
+													>
+														<IconTrash className="w-5 text-white" />
+													</button>
 												</div>
 											</div>
 										</div>
