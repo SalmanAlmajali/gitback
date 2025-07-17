@@ -1,8 +1,8 @@
 import React from 'react'
 import { PageTitle } from '../layout'
 import Table from '@/components/ui/table'
-import { fetchFilteredRepositoriesFromLocal } from '@/lib/data';
 import { Metadata } from 'next';
+import { fetchFilteredRepositoriesFromLocal } from '@/app/lib/repositories/actions';
 
 export const metadata: Metadata = {
 	title: "Repositories"
