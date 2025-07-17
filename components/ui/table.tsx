@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Row, RowList } from 'postgres';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
-import { RepositoriesTable } from '@/lib/definitions';
+import { RepositoriesTable } from '@/app/lib/definitions';
 
 export default async function Table({
     pageName,
