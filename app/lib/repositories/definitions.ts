@@ -1,28 +1,54 @@
+import { User } from "../users/definitions";
+
 export type Repository = {
     id: string;
-    user_id: string;
+    userId: string;
     name: string;
-    github_owner: string;
-    github_repo: string;
-    created_at: string;
-    updated_at: string;
+    githubOwner: string;
+    githubRepo: string;
+    createdAt: string;
+    updatedAt: string;
 };
+
+export type RepositoryColumnKey =
+    | 'id'
+    | 'name'
+    | 'githubOwner'
+    | 'githubRepo'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'user'
+    | 'email';
 
 export type RepositoriesTable = {
     id: string;
-    user_id: string;
+    userId: string;
     name: string;
-    github_owner: string;
-    github_repo: string;
-    created_at: string;
-    updated_at: string;
-    username: string;
-    email: string;
+    githubOwner: string;
+    githubRepo: string;
+    createdAt: string;
+    updatedAt: string;
+    user: User;
+    [key: string]: any;
+};
+
+export type RepositoriesTableRow = {
+    id: string;
+    userId: string;
+    name: string;
+    githubOwner: string;
+    githubRepo: string;
+    createdAt: Date;
+    updatedAt: Date;
+    username?: string | null;
+    email?: string | null;
+    user?: { name?: string | null; email?: string | null };
+    [key: string]: any;
 };
 
 export type RepositoryForm = {
     id: string;
-    user_id: string;
+    userId: string;
     name: string;
     github_owner: string;
     github_repo: string;
