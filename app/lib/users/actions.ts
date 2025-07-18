@@ -1,18 +1,26 @@
-import { User, UserField } from "./definitions";
+'use server'
 
-export async function fetchUsersFromAPI() {
+import { PrismaClient } from "@/app/generated/prisma";
+import { UserField } from "./definitions";
 
+const prisma = new PrismaClient();
+
+const ITEMS_PER_PAGE = 10;
+
+export async function fetchUsers() {
     try {
-        const response = await fetch(`http://localhost:3000/api/users`)
-            .then(res => res.json())
-
-        const repositories = <UserField[]>response.map((user: User) => {
-            return user;
+        const users: UserField[] = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+            }
         });
 
-        return repositories;
+        return users;
     } catch (error) {
-        console.error('Database Error:', error);
-        throw new Error('Failed to fetch repositories.');
+        console.error('Failed to fetch users:', error);
+        throw new Error('Failed to fetch users from the database.');
+    } finally {
+        await prisma.$disconnect();
     }
 }
