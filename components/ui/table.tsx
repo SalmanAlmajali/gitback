@@ -24,6 +24,21 @@ export default async function Table({
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
 
+    const Delete = ({ item }: { item: RepositoriesTableRow }) => {
+        return (
+            <form action={async () => {
+                'use server';
+
+                await deleteAction(item?.id)
+            }}>
+                <button type="submit" className="rounded-md border p-2 bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
+                    <span className="sr-only">Delete</span>
+                    <IconTrash className="w-5" />
+                </button>
+            </form>
+        )
+    }
+
     return (
         <div className="mt-6 flow-root overflow-x-scroll">
             <div className="inline-block min-w-full align-middle">
@@ -62,6 +77,7 @@ export default async function Table({
                                         </div>
                                         <div className="flex justify-end gap-2">
                                             <Update id={repository.id} pageName={pageName} />
+                                            <Delete item={repository} />
                                         </div>
                                     </div>
                                 </div>
@@ -122,16 +138,7 @@ export default async function Table({
                                         <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                             <div className="flex justify-end gap-3">
                                                 <Update id={tr?.id} pageName={pageName} />
-                                                <form action={async() => {
-                                                    'use server';
-
-                                                    await deleteAction(tr?.id)
-                                                }}>
-                                                    <button type="submit" className="rounded-md border p-2 bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
-                                                        <span className="sr-only">Delete</span>
-                                                        <IconTrash className="w-5" />
-                                                    </button>
-                                                </form>
+                                                <Delete item={tr} />
                                             </div>
                                         </td>
                                     </tr>
