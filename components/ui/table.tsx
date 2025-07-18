@@ -1,32 +1,46 @@
 import { IconPencil, IconTrash } from '@tabler/icons-react';
 import Link from 'next/link';
-import { Row, RowList } from 'postgres';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
-import clsx from 'clsx';
-import { RepositoriesTable } from '@/app/lib/repositories/definitions';
+import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
+import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
 
 export default async function Table({
     pageName,
     query,
     currentPage,
     tableHead,
+    renderCell,
     fetchFilteredFunction,
+    deleteAction,
 }: {
     pageName: string;
     query: string;
     currentPage: number;
-    tableHead: {
-        label: string,
-        key: string,
-        type: string,
-    }[];
-    fetchFilteredFunction: (query: string, currentPage: number) => Promise<RowList<RepositoriesTable[]>> | Promise<RowList<Row[]>> | Promise<RepositoriesTable[]>;
+    tableHead: TableHeadColumn[];
+    renderCell: RenderCellFunction<RepositoriesTableRow>
+    fetchFilteredFunction: (query: string, currentPage: number) => Promise<RepositoriesTableRow[]>;
+    deleteAction: (id: string) => Promise<void>;
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
 
+    const Delete = ({ item }: { item: RepositoriesTableRow }) => {
+        return (
+            <form action={async () => {
+                'use server';
+
+                await deleteAction(item?.id)
+            }}>
+                <button type="submit" className="rounded-md border p-2 bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
+                    <span className="sr-only">Delete</span>
+                    <IconTrash className="w-5" />
+                </button>
+            </form>
+        )
+    }
+
     return (
-        <div className="mt-6 flow-root overflow-x-scroll rounded-xl no-scrollbar">
+        <div className="mt-6 flow-root overflow-x-scroll">
             <div className="inline-block min-w-full align-middle">
                 <div className="rounded-lg bg-neutral-100 dark:bg-neutral-900 p-2 md:pt-0">
                     <div className="md:hidden">
@@ -44,24 +58,26 @@ export default async function Table({
                                                     orientation="vertical"
                                                     className="mx-2 data-[orientation=vertical]:h-4"
                                                 />
-                                                <p>{repository.name}</p>
+                                                <p>
+                                                    {renderCell(repository, tableHead[0])}
+                                                </p>
                                             </div>
-                                            <p className={`${figtree.className} text-sm text-gray-500`}>{repository.username}</p>
-                                            <p className={`${figtree.className} text-sm text-gray-500`}>{repository.email}</p>
+                                            <p className={`${figtree.className} text-sm text-gray-500`}>{renderCell(repository, tableHead[3])}</p>
+                                            <p className={`${figtree.className} text-sm text-gray-500`}>{renderCell(repository, tableHead[4])}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col w-full items-start justify-between gap-y-4 pt-4">
                                         <div className='space-y-2'>
                                             <small className={figtree.className}>Github Owner:</small>
                                             <p className="text-xl font-medium">
-                                                {repository.github_owner}
+                                                {renderCell(repository, tableHead[1])}
                                             </p>
                                             <small className={figtree.className}>Github Repository:</small>
-                                            <p className="text-xl font-medium">{repository.github_repo}</p>
+                                            <p className="text-xl font-medium">{renderCell(repository, tableHead[2])}</p>
                                         </div>
                                         <div className="flex justify-end gap-2">
-                                            <Update id={repository?.id} pageName={pageName} />
-                                            <Delete id={repository?.id} pageName={pageName} />
+                                            <Update id={repository.id} pageName={pageName} />
+                                            <Delete item={repository} />
                                         </div>
                                     </div>
                                 </div>
@@ -105,33 +121,15 @@ export default async function Table({
                                                 switch (td?.type) {
                                                     case 'date':
                                                         return (
-                                                            <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
-                                                                {
-                                                                    "rounded-l-xl": index === 0 && i === 0,
-                                                                    "rounded-tl-xl": index === 0 && i === 0 && datas?.length > 1,
-                                                                    "rounded-r-xl": index === tableHead.length - 1 && datas.length === 1,
-                                                                    "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
-                                                                    "rounded-bl-xl": index === 0 && i === datas.length - 1,
-                                                                    "rounded-br-xl": index === tableHead?.length - 1 && i === datas.length - 1,
-                                                                },
-                                                            )} key={td?.key}>
-                                                                {new Date((tr as Record<string, string>)?.[td.key]).toLocaleDateString()}
+                                                            <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
+                                                                {renderCell(tr, td)}
                                                             </td>
                                                         )
 
                                                     default:
                                                         return (
-                                                            <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
-                                                                {
-                                                                    "rounded-l-xl": index === 0 && i === 0 && datas.length === 1,
-                                                                    "rounded-tl-xl": index === 0 && i === 0,
-                                                                    "rounded-r-xl": index === tableHead.length - 1 && datas.length === 1,
-                                                                    "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
-                                                                    "rounded-bl-xl": index === 0 && i === datas.length - 1,
-                                                                    "rounded-br-xl": index === tableHead?.length - 1 && i === datas.length - 1,
-                                                                },
-                                                            )} key={td?.key}>
-                                                                {(tr as Record<string, string>)?.[td.key]}
+                                                            <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
+                                                                {renderCell(tr, td)}
                                                             </td>
                                                         )
                                                 }
@@ -140,7 +138,7 @@ export default async function Table({
                                         <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                             <div className="flex justify-end gap-3">
                                                 <Update id={tr?.id} pageName={pageName} />
-                                                <Delete id={tr?.id} pageName={pageName} />
+                                                <Delete item={tr} />
                                             </div>
                                         </td>
                                     </tr>
@@ -157,17 +155,9 @@ export default async function Table({
 const Update = ({ id, pageName }: { id: string, pageName: string }) => (
     <Link
         href={`/dashboard/${pageName.toLowerCase()}/${id}/edit`}
-        className="rounded-md border p-2 bg-blue-500 hover:bg-blue-700 transition-colors"
+        className="rounded-md border p-2 bg-blue-600 hover:bg-blue-700 transition-colors"
     >
-        <IconPencil className="w-5 text-white" />
-    </Link>
-)
-
-const Delete = ({ id, pageName }: { id: string, pageName: string }) => (
-    <Link
-        href={`/dashboard/${pageName.toLowerCase()}/${id}/edit`}
-        className="rounded-md border p-2 bg-red-500 hover:bg-red-700 transition-colors"
-    >
-        <IconTrash className="w-5 text-white" />
+        <span className="sr-only">Edit</span>
+        <IconPencil className="w-5" />
     </Link>
 )

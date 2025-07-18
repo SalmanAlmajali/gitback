@@ -1,22 +1,23 @@
 import { UserField } from '@/app/lib/users/definitions';
 import { IconBookmarks, IconBrandGit, IconBrandGithub, IconUserCircle } from '@tabler/icons-react';
 import { Button } from '../button';
-import { Dispatch, FormEvent, SetStateAction } from 'react';
+import Link from 'next/link';
+import { createRepository } from '@/app/lib/repositories/actions';
 
 export default function CreateForm({
-    handleAdd,
     users,
-    setAdding,
-    setRepository,
 }: {
-    handleAdd: (e: FormEvent<Element>) => Promise<void>,
-    users: UserField[],
-    setAdding: Dispatch<SetStateAction<boolean>>
-    setRepository: Dispatch<SetStateAction<{ user_id: string; name: string; github_owner: string; github_repo: string; }>>
+    users: UserField[];
 }) {
 
     return (
-        <form onSubmit={handleAdd} className='my-8'>
+        <form
+            action={async (formData: FormData) => {
+                'use server';
+                await createRepository(formData);
+            }}
+            className="my-8"
+        >
             <div className="rounded-md bg-neutral-100 dark:bg-neutral-900 p-4 md:p-6">
                 {/* User Name */}
                 <div className="mb-4">
@@ -28,12 +29,8 @@ export default function CreateForm({
                             id="user_id"
                             name="user_id"
                             className="peer block w-full cursor-pointer rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                            onChange={e => setRepository((prev) => ({
-                                ...prev,
-                                user_id: e.target.value,
-                            }))}
                         >
-                            <option value="">
+                            <option value="" className='text-black'>
                                 Select a user
                             </option>
                             {users.map((user) => (
@@ -59,10 +56,6 @@ export default function CreateForm({
                                 type="text"
                                 placeholder="Enter repository name"
                                 className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                                onChange={e => setRepository((prev) => ({
-                                    ...prev,
-                                    name: e.target.value,
-                                }))}
                             />
                             <IconBookmarks className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                         </div>
@@ -82,10 +75,6 @@ export default function CreateForm({
                                 type="text"
                                 placeholder="Enter github owner"
                                 className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                                onChange={e => setRepository((prev) => ({
-                                    ...prev,
-                                    github_owner: e.target.value,
-                                }))}
                             />
                             <IconBrandGithub className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                         </div>
@@ -105,10 +94,6 @@ export default function CreateForm({
                                 type="text"
                                 placeholder="Enter github repository"
                                 className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                                onChange={e => setRepository((prev) => ({
-                                    ...prev,
-                                    github_repo: e.target.value,
-                                }))}
                             />
                             <IconBrandGit className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                         </div>
@@ -116,13 +101,13 @@ export default function CreateForm({
                 </div>
 
             </div>
-            <div className="mt-6 flex justify-end gap-4">
-                <Button
+            <div className="mt-6 flex justify-between md:justify-end gap-4">
+                <Link
                     className="flex items-center rounded-lg bg-gray-100 dark:bg-gray-900 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
-                    onClick={() => setAdding(false)}
+                    href={'/dashboard/repositories'}
                 >
                     Cancel
-                </Button>
+                </Link>
                 <Button type="submit">Create Repository</Button>
             </div>
         </form >

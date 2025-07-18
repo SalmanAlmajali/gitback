@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum IssueType {
+  bug
+  feature
+  other
+}
+
+model User {
+  id           String       @id @default(uuid()) @map("id") @db.Uuid
+  name         String?      @map("name") @db.VarChar(100)
+  email        String       @unique @map("email") @db.VarChar(150)
+  githubToken  String?      @map("github_token") @db.Text
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamp
+  updatedAt    DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+  repositories Repository[]
+}
+
+model Repository {
+  id             String          @id @default(uuid()) @map("id") @db.Uuid
+  userId         String          @map("user_id") @db.Uuid
+  name           String          @map("name") @db.VarChar(100)
+  githubOwner    String          @map("github_owner") @db.VarChar(100)
+  githubRepo     String          @map("github_repo") @db.VarChar(100)
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamp
+  updatedAt      DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+  feedbackIssues FeedbackIssue[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FeedbackIssue {
+  id                String    @id @default(uuid()) @map("id") @db.Uuid
+  repositoryId      String    @map("repository_id") @db.Uuid
+  title             String    @db.Text
+  description       String?   @db.Text
+  type              IssueType @default(other) @map("type")
+  githubIssueNumber Int?      @map("github_issue_number")
+  githubUrl         String?   @map("github_url") @db.Text
+  synced            Boolean   @default(false) @map("synced")
+  createdBy         String?   @map("created_by") @db.VarChar(100)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamp
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+
+  repository     Repository      @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  aiFeedbackLogs AIFeedbackLog[]
+}
+
+model AIFeedbackLog {
+  id              String   @id @default(uuid()) @map("id") @db.Uuid
+  feedbackIssueId String   @map("feedback_issue_id") @db.Uuid
+  aiSummary       String?  @map("ai_summary") @db.Text
+  aiTags          String?  @map("ai_tags") @db.Text
+  processedAt     DateTime @default(now()) @map("processed_at") @db.Timestamp
+
+  feedbackIssue FeedbackIssue @relation(fields: [feedbackIssueId], references: [id], onDelete: Cascade)
+}

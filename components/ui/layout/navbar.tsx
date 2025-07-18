@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react'
-import { figtree } from '../../fonts'
 import Link from 'next/link'
 import clsx from 'clsx';
-import { ThemeSwitcher } from '../theme/theme-switcher';
 import { usePathname } from 'next/navigation';
+import { figtree } from '@/components/fonts';
 import LinkButton from '../link-button';
+import { ThemeSwitcher } from '../theme/theme-switcher';
 import ApplicationLogo from '../application-logo';
 
 function Navbar() {
@@ -15,21 +15,17 @@ function Navbar() {
             label: 'Home',
             href: '/'
         },
-        {
-            label: 'Dashboard',
-            href: '/dashboard'
-        },
     ];
 
     const pathname = usePathname()
 
     return (
-        <nav className='fixed w-full my-4 flex flex-col md:flex-row justify-center px-4 box-border'>
+        <nav className='fixed w-full mt-4 flex justify-center'>
             <div className='max-w-5xl w-full py-3 px-8 rounded-full bg-accent/5 backdrop-blur-sm ring ring-accent flex justify-between items-center shadow-2xl'>
                 <Link href={'/'} className={`${figtree.className} text-2xl font-bold`}>
                     <ApplicationLogo />
                 </Link>
-                <div className='hidden md:flex text-sm items-center gap-x-10'>
+                <div className='text-sm flex items-center gap-x-10'>
                     {navs?.map((item, i) => (
                         <Link href={item?.href} key={i} className={clsx("",
                             {
@@ -50,7 +46,7 @@ function Navbar() {
                 <div className='flex items-center gap-x-4'>
                     <LinkButton
                         href={'/auth/login'}
-                        className='hidden md:flex rounded-full pr-1 pl-2 py-1'
+                        className='rounded-full pr-1 pl-2 py-1'
                     >
                         <span>Login</span>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -58,35 +54,6 @@ function Navbar() {
                         </svg>
                     </LinkButton>
                     <ThemeSwitcher />
-                </div>
-            </div>
-            <div className='block md:hidden fixed w-full py-3 px-8 rounded-t-xl bg-accent/5 backdrop-blur-sm ring ring-accent shadow-2xl bottom-0 left-0'>
-                <div className='flex md:hidden text-sm items-center justify-between'>
-                    {navs?.map((item, i) => (
-                        <Link href={item?.href} key={i} className={clsx("",
-                            {
-                                '': pathname === item?.href,
-                            },
-                            {
-                                'group': pathname !== item?.href,
-                            },
-                        )}>
-                            <NavLabel
-                                label={item?.label}
-                                pathname={pathname}
-                                href={item?.href}
-                            />
-                        </Link>
-                    ))}
-                    <LinkButton
-                        href={'/auth/login'}
-                        className='flex md:hidden rounded-full pr-1 pl-2 py-1'
-                    >
-                        <span>Login</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                    </LinkButton>
                 </div>
             </div>
         </nav>

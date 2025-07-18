@@ -4,9 +4,11 @@ import * as React from "react"
 import {
     IconBookmarks,
     IconDashboard,
+    IconInnerShadowTop,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/ui/layout/sidebar/nav-main"
+import { NavUser } from "@/components/ui/layout/sidebar/nav-user"
 import {
     Sidebar,
     SidebarContent,
@@ -16,10 +18,9 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/layout/sidebar/sidebar"
-import { figtree } from "../../../fonts"
 import Link from "next/link"
+import { figtree } from "@/components/fonts"
 import { SvgIcon } from "../../application-logo"
-import { NavUser } from "./nav-user"
 
 const data = {
     user: {
@@ -51,7 +52,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             asChild
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
-                            <Link href={'/dashboard'} className={figtree.className}>
+                            <Link href={'/'} className={figtree.className}>
                                 <SvgIcon className="!size-6" />
                                 <span className="text-base font-semibold">Gitback</span>
                             </Link>
