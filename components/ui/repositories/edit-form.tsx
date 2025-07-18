@@ -1,21 +1,26 @@
+'use client';
+
 import { UserField } from '@/app/lib/users/definitions';
 import { IconBookmarks, IconBrandGit, IconBrandGithub, IconUserCircle } from '@tabler/icons-react';
 import { Button } from '../button';
 import Link from 'next/link';
-import { createRepository } from '@/app/lib/repositories/actions';
+import { updateRepository } from '@/app/lib/repositories/actions';
+import { RepositoryForm } from '@/app/lib/repositories/definitions';
 
-export default function CreateForm({
+export default function EditForm({
+    repository,
     users,
 }: {
+    repository: RepositoryForm;
     users: UserField[];
 }) {
+    const updateRepositoryWithId = async (formData: FormData) => {
+        await updateRepository(repository?.id, formData);
+    }
 
     return (
         <form
-            action={async (formData: FormData) => {
-                'use server';
-                await createRepository(formData);
-            }}
+            action={updateRepositoryWithId}
             className="my-8"
         >
             <div className="rounded-md bg-neutral-100 dark:bg-neutral-900 p-4 md:p-6">
@@ -29,6 +34,7 @@ export default function CreateForm({
                             id="user_id"
                             name="user_id"
                             className="peer block w-full cursor-pointer rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                            defaultValue={repository?.userId}
                         >
                             <option value="" className='text-black'>
                                 Select a user
@@ -56,6 +62,7 @@ export default function CreateForm({
                                 type="text"
                                 placeholder="Enter repository name"
                                 className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                defaultValue={repository?.name}
                             />
                             <IconBookmarks className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                         </div>
@@ -75,6 +82,7 @@ export default function CreateForm({
                                 type="text"
                                 placeholder="Enter github owner"
                                 className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                defaultValue={repository?.githubOwner}
                             />
                             <IconBrandGithub className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                         </div>
@@ -94,6 +102,7 @@ export default function CreateForm({
                                 type="text"
                                 placeholder="Enter github repository"
                                 className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                defaultValue={repository?.githubRepo}
                             />
                             <IconBrandGit className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                         </div>
@@ -108,7 +117,7 @@ export default function CreateForm({
                 >
                     Cancel
                 </Link>
-                <Button type="submit">Create Repository</Button>
+                <Button type="submit">Update Repository</Button>
             </div>
         </form >
     );
