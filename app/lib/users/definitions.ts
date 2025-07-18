@@ -2,12 +2,12 @@ export type User = {
     id: string;
     name: string;
     email: string;
-    github_token: string | null;
-    created_at: string;
-    updated_at: string;
+    githubToken: string | null;
+    createdAt: string;
+    updatedAt: string;
 };
 
 export type UserField = {
     id: string;
-    name: string;
+    name: string | null;
 };
