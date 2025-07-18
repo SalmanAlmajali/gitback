@@ -1,11 +1,13 @@
 import { PageTitle } from '../layout'
 import Table from '@/components/ui/table'
 import { Metadata } from 'next';
-import { fetchFilteredRepositories } from '@/app/lib/repositories/actions';
+import { deleteRepository, fetchFilteredRepositories } from '@/app/lib/repositories/actions';
 import Search from '@/components/ui/search';
 import LinkButton from '@/components/ui/link-button';
 import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
 import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
+import { Suspense } from 'react';
+import SkeletonTable from '@/components/ui/repositories/skeleton';
 
 export const metadata: Metadata = {
 	title: "Repositories"
@@ -64,14 +66,17 @@ async function Page({
 					Create Repository
 				</LinkButton>
 			</div>
-			<Table
-				pageName={'Repositories'}
-				query={query}
-				currentPage={currentPage}
-				tableHead={tableHead}
-				renderCell={renderCell}
-				fetchFilteredFunction={fetchFilteredRepositories}
-			/>
+			<Suspense key={query + currentPage} fallback={<SkeletonTable tableHead={tableHead} />}>
+				<Table
+					pageName={'Repositories'}
+					query={query}
+					currentPage={currentPage}
+					tableHead={tableHead}
+					renderCell={renderCell}
+					fetchFilteredFunction={fetchFilteredRepositories}
+					deleteAction={deleteRepository}
+				/>
+			</Suspense>
 		</div>
 	)
 }
