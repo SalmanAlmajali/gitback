@@ -94,7 +94,7 @@ export default async function Table({
                                     tableHead?.map((item, i) => (
                                         <th
                                             scope="col"
-                                            className="px-3 py-5 font-medium"
+                                            className={`${figtree.className} px-3 py-5 font-semibold tracking-tight text-balance`}
                                             key={i}
                                         >
                                             {item?.label}
@@ -106,18 +106,18 @@ export default async function Table({
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-black">
+                        <tbody>
                             {
                                 datas?.map((tr, i) => (
                                     <tr
                                         key={tr.id}
-                                        className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                                        className="w-full py-3 text-sm last-of-type:border-none"
                                     >
                                         <td className="whitespace-nowrap px-3 py-3">
                                             {i + 1}.
                                         </td>
                                         {
-                                            tableHead?.map(td => {
+                                            tableHead?.map((td, index) => {
                                                 switch (td?.type) {
                                                     case 'date':
                                                         return (

@@ -3,7 +3,6 @@ import { fetchRepositoryById } from '@/app/lib/repositories/actions'
 import { fetchUsers } from '@/app/lib/users/actions'
 import EditForm from '@/components/ui/repositories/edit-form'
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import React from 'react'
 
 export const metadata: Metadata = {
@@ -24,7 +23,7 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 	}
 
 	return (
-		<div>
+		<main>
 			<Breadcrumbs
 				breadcrumbs={[
 					{ label: 'Repositories', href: '/dashboard/repositories' },
@@ -36,7 +35,7 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 				]}
 			/>
 			<EditForm repository={repository} users={users} />
-		</div>
+		</main>
 	)
 }
 

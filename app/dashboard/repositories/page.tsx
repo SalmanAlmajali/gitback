@@ -9,9 +9,18 @@ import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
 import { Suspense } from 'react';
 import SkeletonTable from '@/components/ui/repositories/skeleton';
 
-export const metadata: Metadata = {
-	title: "Repositories"
-}
+function Page() {
+	const [repositories, setRepositories] = useState<RepositoriesTable[]>([])
+	const [loading, setLoading] = useState<boolean>(true);
+	const [error, setError] = useState<string | null>(null);
+	const [repository, setRepository] = useState({
+		user_id: '',
+		name: '',
+		github_owner: '',
+		github_repo: '',
+	});
+	const [adding, setAdding] = useState<boolean>(false);
+	const [editRepository, setEditRepository] = useState<RepositoriesTable>();
 
 const tableHead = [
 	{ label: 'Name', key: 'name', type: 'text' },
@@ -58,7 +67,7 @@ async function Page({
 	const currentPage = Number((await searchParams)?.page) || 1;
 
 	return (
-		<div>
+		<div >
 			<PageTitle title='Repositories' />
 			<div className="flex items-center justify-between gap-2 md:mt-8">
 				<Search placeholder='Search repositories...' />

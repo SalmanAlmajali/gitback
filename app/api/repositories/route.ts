@@ -60,4 +60,11 @@ export async function GET(request: NextRequest) {
     } finally {
         await prisma.$disconnect(); // Disconnect Prisma Client after the request
     }
+
+    return new Response(JSON.stringify(repositories), {
+        status: 200,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
 }
