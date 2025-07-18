@@ -1,5 +1,7 @@
 import { Breadcrumbs } from '@/app/dashboard/layout'
-import { fetchRepositoryByIdFromLocal } from '@/lib/data'
+import { fetchRepositoryById } from '@/app/lib/repositories/actions'
+import { fetchUsers } from '@/app/lib/users/actions'
+import EditForm from '@/components/ui/repositories/edit-form'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import React from 'react'
@@ -12,7 +14,10 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 	const params = await props.params;
 	const id = params.id;
 
-	const repository = await fetchRepositoryByIdFromLocal(id);
+	const [repository, users] = await Promise.all([
+		fetchRepositoryById(id),
+		fetchUsers()
+	]);
 
 	if (!repository) {
 		notFound();
@@ -30,12 +35,7 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 					},
 				]}
 			/>
-			<p>Datanya ada di database. Males bikin formnya jadi, gini aja dulu</p>
-			<pre className="bg-neutral-100 dark:bg-neutral-900 p-4 rounded-md overflow-x-auto">
-				<code className="font-mono">
-					{JSON.stringify(repository, null, 2)}
-				</code>
-			</pre>
+			<EditForm repository={repository} users={users} />
 		</div>
 	)
 }
