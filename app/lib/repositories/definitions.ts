@@ -8,7 +8,7 @@ export type Repository = {
     githubRepo: string;
     createdAt: string;
     updatedAt: string;
-};
+} | null;
 
 export type RepositoryColumnKey =
     | 'id'
@@ -50,6 +50,6 @@ export type RepositoryForm = {
     id: string;
     userId: string;
     name: string;
-    github_owner: string;
-    github_repo: string;
-};
+    githubOwner: string;
+    githubRepo: string;
+} | null;
