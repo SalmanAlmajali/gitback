@@ -1,9 +1,8 @@
-import { IconPencil } from '@tabler/icons-react';
+import { IconPencil, IconTrash } from '@tabler/icons-react';
 import Link from 'next/link';
-import { Row, RowList } from 'postgres';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
-import { RepositoriesTable, RepositoriesTableRow } from '@/app/lib/repositories/definitions';
+import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
 import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
 
 export default async function Table({
@@ -13,6 +12,7 @@ export default async function Table({
     tableHead,
     renderCell,
     fetchFilteredFunction,
+    deleteAction,
 }: {
     pageName: string;
     query: string;
@@ -20,11 +20,9 @@ export default async function Table({
     tableHead: TableHeadColumn[];
     renderCell: RenderCellFunction<RepositoriesTableRow>
     fetchFilteredFunction: (query: string, currentPage: number) => Promise<RepositoriesTableRow[]>;
+    deleteAction: (id: string) => Promise<void>;
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
-
-    console.log(datas);
-
 
     return (
         <div className="mt-6 flow-root overflow-x-scroll">
@@ -124,6 +122,16 @@ export default async function Table({
                                         <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                             <div className="flex justify-end gap-3">
                                                 <Update id={tr?.id} pageName={pageName} />
+                                                <form action={async() => {
+                                                    'use server';
+
+                                                    await deleteAction(tr?.id)
+                                                }}>
+                                                    <button type="submit" className="rounded-md border p-2 bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
+                                                        <span className="sr-only">Delete</span>
+                                                        <IconTrash className="w-5" />
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -140,8 +148,9 @@ export default async function Table({
 const Update = ({ id, pageName }: { id: string, pageName: string }) => (
     <Link
         href={`/dashboard/${pageName.toLowerCase()}/${id}/edit`}
-        className="rounded-md border p-2 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+        className="rounded-md border p-2 bg-blue-600 hover:bg-blue-700 transition-colors"
     >
+        <span className="sr-only">Edit</span>
         <IconPencil className="w-5" />
     </Link>
 )
