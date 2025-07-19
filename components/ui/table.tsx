@@ -4,6 +4,7 @@ import { figtree } from '../fonts';
 import { Separator } from './separator';
 import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
 import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
+import clsx from 'clsx';
 
 export default async function Table({
     pageName,
@@ -121,14 +122,32 @@ export default async function Table({
                                                 switch (td?.type) {
                                                     case 'date':
                                                         return (
-                                                            <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
+                                                            <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
+                                                                {
+                                                                    "rounded-l-xl": index === 0 && i === 0 && datas?.length === 1,
+                                                                    "rounded-tl-xl": index === 0 && i === 0,
+                                                                    "rounded-r-xl": index === tableHead.length - 1 && datas?.length === 1,
+                                                                    "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
+                                                                    "rounded-bl-xl": index === 0 && i === datas?.length - 1,
+                                                                    "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.length - 1,
+                                                                }
+                                                            )} key={td?.key}>
                                                                 {renderCell(tr, td)}
                                                             </td>
                                                         )
 
                                                     default:
                                                         return (
-                                                            <td className="whitespace-nowrap px-3 py-3" key={td?.key}>
+                                                            <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
+                                                                {
+                                                                    "rounded-l-xl": index === 0 && i === 0 && datas?.length === 1,
+                                                                    "rounded-tl-xl": index === 0 && i === 0,
+                                                                    "rounded-r-xl": index === tableHead.length - 1 && datas?.length === 1,
+                                                                    "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
+                                                                    "rounded-bl-xl": index === 0 && i === datas?.length - 1,
+                                                                    "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.length - 1,
+                                                                }
+                                                            )} key={td?.key}>
                                                                 {renderCell(tr, td)}
                                                             </td>
                                                         )
