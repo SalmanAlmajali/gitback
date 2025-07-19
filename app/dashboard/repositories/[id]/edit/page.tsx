@@ -3,6 +3,7 @@ import { fetchRepositoryById } from '@/app/lib/repositories/actions'
 import { fetchUsers } from '@/app/lib/users/actions'
 import EditForm from '@/components/ui/repositories/edit-form'
 import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import React from 'react'
 
 export const metadata: Metadata = {

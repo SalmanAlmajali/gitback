@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/app/generated/prisma";
+import { PrismaClient } from '@prisma/client'
 import { NextRequest } from "next/server";
 
 const prisma = new PrismaClient();
@@ -60,11 +60,4 @@ export async function GET(request: NextRequest) {
     } finally {
         await prisma.$disconnect(); // Disconnect Prisma Client after the request
     }
-
-    return new Response(JSON.stringify(repositories), {
-        status: 200,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    });
 }

@@ -1,7 +1,6 @@
 'use server'
 
-import { PrismaClient } from "@/app/generated/prisma";
-import { UserField } from "./definitions";
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient();
 

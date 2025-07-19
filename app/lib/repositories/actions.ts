@@ -1,14 +1,12 @@
 'use server'
 
-import { PrismaClient } from "@/app/generated/prisma";
+import { PrismaClient } from '@prisma/client'
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as z from "zod";
 import { RepositoryForm } from "./definitions";
 
 const prisma = new PrismaClient();
-
-console.log(prisma);
 
 const ITEMS_PER_PAGE = 10;
 
