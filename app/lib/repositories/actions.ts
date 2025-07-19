@@ -8,6 +8,8 @@ import { RepositoryForm } from "./definitions";
 
 const prisma = new PrismaClient();
 
+console.log(prisma);
+
 const ITEMS_PER_PAGE = 10;
 
 const FormSchema = z.object({
