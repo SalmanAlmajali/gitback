@@ -9,13 +9,13 @@ const ITEMS_PER_PAGE = 10;
 
 export async function fetchUsers() {
     try {
-        const users: UserField[] = await prisma.user.findMany({
+        const users = await prisma.user.findMany({
             select: {
                 id: true,
                 name: true,
-            }
+            },
         });
-
+        
         return users;
     } catch (error) {
         console.error('Failed to fetch users:', error);
