@@ -34,6 +34,7 @@ export const config: AuthOptions = {
         GitHub({
             clientId: process.env.GITHUB_ID as string,
             clientSecret: process.env.GITHUB_SECRET as string,
+            authorization: { params: { scope: 'repo user' } },
         }),
         Credentials({
             name: "Credentials",

@@ -8,9 +8,9 @@ export interface Breadcrumb {
 
 export interface TableHeadColumn {
 	label: string;
-	key: string; // The property key from RepositoriesTableRow (e.g., 'fullName', 'user.name')
-	type: 'text' | 'number' | 'boolean' | 'date' | 'link'; // Type of data for rendering logic
-	hrefKey?: string; // Optional: for 'link' type, specifies the key for the URL
+	key: string;
+	type: 'text' | 'number' | 'boolean' | 'date' | 'link';
+	hrefKey?: string;
 }
 
 export type RenderCellFunction<T> = (
@@ -24,3 +24,9 @@ export type SignupPayload = {
 	password: string;
 	confirmPassword: string;
 };
+
+export type CustomResponse = {
+	success?: boolean;
+	message?: string;
+	error?: string
+}
