@@ -2,15 +2,19 @@ import React from 'react'
 import { Breadcrumbs } from '@/app/dashboard/layout'
 import { Metadata } from 'next'
 import CreateForm from '@/components/ui/repositories/create-form'
-import { fetchUsers } from '@/app/lib/users/actions'
+import { getAuthenticatedUserRepos } from '@/app/lib/github/api'
+import { getServerSession } from 'next-auth'
+import { config } from '@/app/lib/auth'
 
 export const metadata: Metadata = {
     title: "Create Repository"
 }
 
 async function Page() {
-    const users = await fetchUsers();
+    const session = await getServerSession(config);
 
+    const repositories = await getAuthenticatedUserRepos(session?.accessToken);
+    
     return (
         <main>
             <Breadcrumbs
@@ -23,7 +27,7 @@ async function Page() {
                     },
                 ]}
             />
-            <CreateForm users={users} />
+            <CreateForm repositories={repositories} />
         </main>
     )
 }

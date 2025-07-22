@@ -1,6 +1,4 @@
 import { Breadcrumbs } from '@/app/dashboard/layout'
-import { fetchRepositoryById } from '@/app/lib/repositories/actions'
-import { fetchUsers } from '@/app/lib/users/actions'
 import EditForm from '@/components/ui/repositories/edit-form'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -14,15 +12,6 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 	const params = await props.params;
 	const id = params.id;
 
-	const [repository, users] = await Promise.all([
-		fetchRepositoryById(id),
-		fetchUsers()
-	]);
-
-	if (!repository) {
-		notFound();
-	}
-
 	return (
 		<div>
 			<Breadcrumbs
@@ -35,7 +24,6 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 					},
 				]}
 			/>
-			<EditForm repository={repository} users={users} />
 		</div>
 	)
 }

@@ -9,12 +9,13 @@ import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
 import { Suspense } from 'react';
 import SkeletonTable from '@/components/ui/repositories/skeleton';
 import { formatDateToLocal, getNestedValue } from '@/app/lib/utils';
+import { IconPlus } from '@tabler/icons-react';
 
 export const metadata: Metadata = {
 	title: "Repositories"
 }
 
-const tableHead = [
+const tableHead: TableHeadColumn[] = [
 	{ label: 'Repository', key: 'fullName', type: 'link', hrefKey: 'htmlUrl' },
 	{ label: 'Description', key: 'description', type: 'text' },
 	{ label: 'Language', key: 'language', type: 'text' },
@@ -82,7 +83,8 @@ async function Page({
 			<div className="flex items-center justify-between gap-2 md:mt-8">
 				<Search placeholder='Search repositories...' />
 				<LinkButton href='/dashboard/repositories/create' className='py-3 px-4 rounded-lg'>
-					Create Repository
+					<span className='hidden md:block'>Create Repository</span>
+					<IconPlus className="h-5" />
 				</LinkButton>
 			</div>
 			<Suspense key={query + currentPage} fallback={<SkeletonTable tableHead={tableHead} />}>
