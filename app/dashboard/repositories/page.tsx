@@ -1,49 +1,68 @@
 import { PageTitle } from '../layout'
 import Table from '@/components/ui/table'
 import { Metadata } from 'next';
-import { deleteRepository, fetchFilteredRepositories } from '@/app/lib/repositories/actions';
+import { getUserSelectedRepositories } from '@/app/lib/repositories/actions';
 import Search from '@/components/ui/search';
 import LinkButton from '@/components/ui/link-button';
 import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
 import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
 import { Suspense } from 'react';
 import SkeletonTable from '@/components/ui/repositories/skeleton';
+import { formatDateToLocal, getNestedValue } from '@/app/lib/utils';
 
 export const metadata: Metadata = {
 	title: "Repositories"
 }
 
 const tableHead = [
-	{ label: 'Name', key: 'name', type: 'text' },
-	{ label: 'Owner', key: 'githubOwner', type: 'text' },
-	{ label: 'Repo', key: 'githubRepo', type: 'text' },
-	{ label: 'User Name', key: 'user', type: 'text' },
-	{ label: 'User Email', key: 'email', type: 'text' },
-	{ label: 'Created At', key: 'createdAt', type: 'date' },
-	{ label: 'Updated At', key: 'updatedAt', type: 'date' },
+	{ label: 'Repository', key: 'fullName', type: 'link', hrefKey: 'htmlUrl' },
+	{ label: 'Description', key: 'description', type: 'text' },
+	{ label: 'Language', key: 'language', type: 'text' },
+	{ label: 'Stars', key: 'stargazersCount', type: 'number' },
+	{ label: 'Forks', key: 'forksCount', type: 'number' },
+	{ label: 'Visibility', key: 'private', type: 'boolean' },
+	{ label: 'Last Updated (GitHub)', key: 'updatedAtGitHub', type: 'date' },
+	{ label: 'Added To App', key: 'createdAt', type: 'date' },
+	{ label: 'Last Updated (App)', key: 'updatedAt', type: 'date' },
+	{ label: 'User Name', key: 'user.name', type: 'text' },
+	{ label: 'User Email', key: 'user.email', type: 'text' },
 ];
 
 const renderCell: RenderCellFunction<RepositoriesTableRow> = (
-    data: RepositoriesTableRow,
-    column: TableHeadColumn
+	data: RepositoriesTableRow,
+	column: TableHeadColumn
 ): React.ReactNode => {
-    // You can still use `as keyof RepositoriesTableRow` for type safety
-    const cellValue = data[column.key as keyof RepositoriesTableRow];
+	const cellValue = getNestedValue(data, column.key);
 
-    switch (column.key) {
-        case 'user':
-            return data.user?.name;
-        case 'email':
-            return data.user?.email;
-        case 'createdAt':
-        case 'updatedAt':
-            // Ensure cellValue is a Date object, as Prisma returns Dates
-            return cellValue instanceof Date
-                ? cellValue.toLocaleDateString()
-                : String(cellValue || ''); // Fallback for safety
-        default:
-            return String(cellValue || ''); // Ensure direct string conversion for display
-    }
+	switch (column.type) {
+		case 'link':
+			const href = getNestedValue(data, column.hrefKey || '');
+			if (href && typeof href === 'string') {
+				return (
+					<a
+						href={href}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-blue-600 hover:underline"
+					>
+						{String(cellValue || '')}
+					</a>
+				);
+			}
+			return String(cellValue || '');
+		case 'boolean':
+			return cellValue === true ? 'Private' : 'Public';
+		case 'date':
+			if (cellValue instanceof Date && !isNaN(cellValue.getTime())) {
+				return formatDateToLocal(cellValue);
+			}
+			return String(cellValue || ''); // Fallback for invalid or non-Date values
+		case 'number':
+			return cellValue !== null && cellValue !== undefined ? String(cellValue) : '';
+		case 'text':
+		default:
+			return String(cellValue || '');
+	}
 };
 
 async function Page({
@@ -73,8 +92,8 @@ async function Page({
 					currentPage={currentPage}
 					tableHead={tableHead}
 					renderCell={renderCell}
-					fetchFilteredFunction={fetchFilteredRepositories}
-					deleteAction={deleteRepository}
+					fetchFilteredFunction={getUserSelectedRepositories}
+				// deleteAction={deleteRepository}
 				/>
 			</Suspense>
 		</div>

@@ -4,6 +4,7 @@ import { figtree } from '../fonts';
 import { Separator } from './separator';
 import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
 import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
+import { UserSelectedRepository } from '@prisma/client';
 
 export default async function Table({
     pageName,
@@ -12,17 +13,20 @@ export default async function Table({
     tableHead,
     renderCell,
     fetchFilteredFunction,
-    deleteAction,
+    // deleteAction,
 }: {
     pageName: string;
     query: string;
     currentPage: number;
     tableHead: TableHeadColumn[];
     renderCell: RenderCellFunction<RepositoriesTableRow>
-    fetchFilteredFunction: (query: string, currentPage: number) => Promise<RepositoriesTableRow[]>;
-    deleteAction: (id: string) => Promise<void>;
+    fetchFilteredFunction: (query: string, currentPage: number) => Promise<{ data?: UserSelectedRepository[]; error?: string }>;
+    // deleteAction: (id: string) => Promise<void>;
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
+
+    console.log(datas);
+    
 
     return (
         <div className="mt-6 flow-root overflow-x-scroll">
@@ -30,7 +34,7 @@ export default async function Table({
                 <div className="rounded-lg bg-neutral-100 dark:bg-neutral-900 p-2 md:pt-0">
                     <div className="md:hidden">
                         {
-                            datas?.map((repository, i) => (
+                            datas?.data?.map((repository, i) => (
                                 <div
                                     key={repository.id}
                                     className="mb-2 w-full rounded-md bg-white dark:bg-black p-4"
@@ -92,7 +96,7 @@ export default async function Table({
                         </thead>
                         <tbody className="bg-white dark:bg-black">
                             {
-                                datas?.map((tr, i) => (
+                                datas?.data?.map((tr, i) => (
                                     <tr
                                         key={tr.id}
                                         className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
@@ -122,7 +126,7 @@ export default async function Table({
                                         <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                             <div className="flex justify-end gap-3">
                                                 <Update id={tr?.id} pageName={pageName} />
-                                                <form action={async() => {
+                                                {/* <form action={async() => {
                                                     'use server';
 
                                                     await deleteAction(tr?.id)
@@ -131,7 +135,7 @@ export default async function Table({
                                                         <span className="sr-only">Delete</span>
                                                         <IconTrash className="w-5" />
                                                     </button>
-                                                </form>
+                                                </form> */}
                                             </div>
                                         </td>
                                     </tr>

@@ -1,3 +1,4 @@
+import { UserSelectedRepository } from "@prisma/client";
 import { User } from "../users/definitions";
 
 export type Repository = {
@@ -32,18 +33,8 @@ export type RepositoriesTable = {
     [key: string]: any;
 };
 
-export type RepositoriesTableRow = {
-    id: string;
-    userId: string;
-    name: string;
-    githubOwner: string;
-    githubRepo: string;
-    createdAt: Date;
-    updatedAt: Date;
-    username?: string | null;
-    email?: string | null;
-    user?: { name?: string | null; email?: string | null };
-    [key: string]: any;
+export type RepositoriesTableRow = UserSelectedRepository & {
+  user?: User;
 };
 
 export type RepositoryForm = {
