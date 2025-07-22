@@ -3,7 +3,7 @@ import { handleSetState } from '@/app/lib/utils';
 import React from 'react'
 
 interface MyInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    setPayload: React.Dispatch<React.SetStateAction<SignupPayload>>;
+    setPayload: React.Dispatch<React.SetStateAction<SignupPayload>> | React.Dispatch<React.SetStateAction<{ query: string; }>>;
     icon: React.ReactNode;
 }
 
