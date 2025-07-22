@@ -1,72 +1,133 @@
+// schema.prisma
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// Defines the Prisma Client generator.
+// When you run `npx prisma generate`, this creates the client code
+// that allows your application to interact with your database.
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  // If you store your generated client in a custom path (e.g., app/generated/prisma),
+  // you might need output = "./node_modules/@prisma/client" or a custom path
+  // However, the default is usually fine if you import 'prisma' from a lib file.
 }
 
+// Defines your database connection.
+// The `url` usually comes from an environment variable (e.g., .env file).
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql" // Change this to "mysql", "sqlite", "sqlserver" etc., if needed
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// Enums
-enum IssueType {
-  bug
-  feature
-  other
-}
+// NextAuth.js models (User, Account, Session, VerificationToken)
+// These models are required when using the @next-auth/prisma-adapter.
+// They are specifically named and structured by NextAuth.js.
 
 model User {
-  id           String       @id @default(uuid()) @map("id") @db.Uuid
-  name         String?      @map("name") @db.VarChar(100)
-  email        String       @unique @map("email") @db.VarChar(150)
-  githubToken  String?      @map("github_token") @db.Text
-  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamp
-  updatedAt    DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamp
-  repositories Repository[]
+  // Primary key, generated automatically (cuid or uuid is standard)
+  id String @id @default(cuid())
+
+  // Fields for credentials login (email, hashedPassword) and general user info
+  name           String? // User's name
+  email          String?   @unique // User's email, must be unique
+  emailVerified  DateTime? // Timestamp when email was verified
+  hashedPassword String? // Hashed password for credentials login (nullable if user only uses OAuth)
+  image          String? // URL to user's profile image
+
+  // Timestamps for creation and last update
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships with other NextAuth.js models
+  accounts               Account[] // A user can have multiple linked accounts (OAuth, credentials)
+  sessions               Session[] // A user can have multiple active sessions
+  UserSelectedRepository UserSelectedRepository[]
 }
 
-model Repository {
-  id             String          @id @default(uuid()) @map("id") @db.Uuid
-  userId         String          @map("user_id") @db.Uuid
-  name           String          @map("name") @db.VarChar(100)
-  githubOwner    String          @map("github_owner") @db.VarChar(100)
-  githubRepo     String          @map("github_repo") @db.VarChar(100)
-  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamp
-  updatedAt      DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamp
-  feedbackIssues FeedbackIssue[]
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id") // Foreign key to User model
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id") // ID from the OAuth provider
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensures that a user cannot link the same provider account twice
+  @@unique([provider, providerAccountId])
+  // Map table name if you prefer snake_case in your database
+  @@map("accounts")
 }
 
-model FeedbackIssue {
-  id                String    @id @default(uuid()) @map("id") @db.Uuid
-  repositoryId      String    @map("repository_id") @db.Uuid
-  title             String    @db.Text
-  description       String?   @db.Text
-  type              IssueType @default(other) @map("type")
-  githubIssueNumber Int?      @map("github_issue_number")
-  githubUrl         String?   @map("github_url") @db.Text
-  synced            Boolean   @default(false) @map("synced")
-  createdBy         String?   @map("created_by") @db.VarChar(100)
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamp
-  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token") // Unique token for the session
+  userId       String   @map("user_id") // Foreign key to User model
+  expires      DateTime // Expiration timestamp for the session
 
-  repository     Repository      @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-  aiFeedbackLogs AIFeedbackLog[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Map table name if you prefer snake_case in your database
+  @@map("sessions")
 }
 
-model AIFeedbackLog {
-  id              String   @id @default(uuid()) @map("id") @db.Uuid
-  feedbackIssueId String   @map("feedback_issue_id") @db.Uuid
-  aiSummary       String?  @map("ai_summary") @db.Text
-  aiTags          String?  @map("ai_tags") @db.Text
-  processedAt     DateTime @default(now()) @map("processed_at") @db.Timestamp
+// This model is for email verification tokens (e.g., for magic link login)
+// If you are only using OAuth and Credentials, you might not actively use this
+// but it's part of the standard Prisma Adapter schema.
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-  feedbackIssue FeedbackIssue @relation(fields: [feedbackIssueId], references: [id], onDelete: Cascade)
+  // Composite unique constraint for identifier and token
+  @@unique([identifier, token])
+  // Map table name if you prefer snake_case in your database
+  @@map("verificationtokens")
+}
+
+model UserSelectedRepository {
+  // Primary key for this table in your database
+  id String @id @default(cuid())
+
+  // Foreign key to link to the User who selected this repository
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // GitHub's unique ID for the repository (crucial for linking back to GitHub)
+  githubRepoId BigInt // GitHub IDs can be large, so BigInt is suitable
+
+  // Core repository information from GitHub
+  name            String // Repository name (e.g., "my-awesome-project")
+  fullName        String // Repository full name (e.g., "username/my-awesome-project")
+  description     String?  @db.Text // Can be long, use @db.Text for text type in Postgres
+  htmlUrl         String // URL to the repository on GitHub
+  private         Boolean // Whether the repository is private or public
+  language        String? // Primary language (e.g., "TypeScript", "JavaScript")
+  stargazersCount Int // Number of stars
+  forksCount      Int // Number of forks
+  updatedAtGitHub DateTime // Last updated timestamp from GitHub
+
+  // Timestamps for when this record was created/updated in your database
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensures that a user can only select a specific GitHub repository once
+  @@unique([userId, githubRepoId])
+  // Optional: Map table name if you prefer snake_case in your database
+  @@map("user_selected_repositories")
 }
