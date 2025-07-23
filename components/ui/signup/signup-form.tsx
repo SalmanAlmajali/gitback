@@ -1,41 +1,45 @@
 'use client';
 
 import { cn } from '@/app/lib/utils'
-import React, { useState } from 'react'
+import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card'
 import { figtree } from '@/components/fonts'
 import { IconKey, IconMail, IconUser } from '@tabler/icons-react'
 import { Button } from '../button'
-import { useRouter } from 'next/navigation'
 import MyInput from '../my-input';
-import { SignupPayload } from '@/app/lib/definitions';
 import { createUser } from '@/app/lib/users/actions';
+import { toast } from 'sonner';
+import { clientSignIn } from '../login/login-form';
 
 function SignupForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-    const router = useRouter();
-    const [payload, setPayload] = useState<SignupPayload>({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-    })
-
     const handleSubmit = async (formData: FormData) => {
-        const [password, confirmPassword] = [
+        const [email, password, confirmPassword] = [
+            formData.get('email')?.toString(),
             formData.get('password')?.toString(),
             formData.get('confirmPassword')?.toString(),
         ];
         
         if (password !== confirmPassword) {
-            console.error("Password does not match.");
+            toast.error("Validation error", {
+                description: "Password does not match",
+            });
             return;
         }
-        await createUser(formData);
-        router.push('/dashboard');
+
+        const result = await createUser(formData);
+
+        if (result?.success) {
+            clientSignIn(email, password);
+        } else {
+            toast.error("Error", {
+                description: result?.error || result?.message,
+            });
+        }
     }
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card>
@@ -57,7 +61,6 @@ function SignupForm({
                                 name={'name'}
                                 type={'text'}
                                 placeholder={"Enter your username"}
-                                setPayload={setPayload}
                                 icon={<IconUser className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
                             />
                         </div>
@@ -69,7 +72,6 @@ function SignupForm({
                                 name={'email'}
                                 type={'email'}
                                 placeholder={"Enter your email address"}
-                                setPayload={setPayload}
                                 icon={<IconMail className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
                             />
                         </div>
@@ -81,7 +83,6 @@ function SignupForm({
                                 name={'password'}
                                 type={'password'}
                                 placeholder={"******"}
-                                setPayload={setPayload}
                                 icon={<IconKey className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
                             />
                         </div>
@@ -93,7 +94,6 @@ function SignupForm({
                                 name={'confirmPassword'}
                                 type={'password'}
                                 placeholder={"Enter the same password"}
-                                setPayload={setPayload}
                                 icon={<IconKey className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
                             />
                         </div>

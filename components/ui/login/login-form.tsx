@@ -1,6 +1,6 @@
 'use client';
 
-import { cn, handleSetState } from "@/app/lib/utils"
+import { cn } from "@/app/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -10,26 +10,47 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { figtree } from "@/components/fonts"
-import { authenticate, gitHubSignIn } from "@/app/lib/users/actions"
 import { IconKey, IconMail } from "@tabler/icons-react"
-import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
+
+export const clientSignIn = async (email: string | undefined, password: string | undefined) => {
+    const result = await signIn('credentials', {
+        email,
+        password,
+        callbackUrl: '/dashboard',
+    });
+
+    if (result?.error !== null && (typeof result?.error === 'string')) {
+        toast.error("Error", {
+            description: result?.error,
+        })
+    }
+}
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
-
-    const [payload, setPayload] = useState({
-        email: '',
-        password: '',
-    });
-
     const handleSubmit = async (formData: FormData) => {
-        await authenticate(undefined, formData)
+        const [email, password] = [
+            formData.get('email')?.toString(),
+            formData.get('password')?.toString(),
+        ];
+
+        clientSignIn(email, password);
     }
 
     const handleSignWithGitHub = async () => {
-        await gitHubSignIn();
+        const result = await signIn('github', {
+            callbackUrl: '/dashboard',
+        })
+
+        if (result?.error !== null && (typeof result?.error === 'string')) {
+            toast.error("Error", {
+                description: result?.error,
+            })
+        }
     }
 
     return (
@@ -55,7 +76,6 @@ export function LoginForm({
                                         type="email"
                                         placeholder="Enter your email address"
                                         className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                                        onChange={e => handleSetState('email', e.target.value, setPayload)}
                                     />
                                     <IconMail className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                                 </div>
@@ -73,7 +93,6 @@ export function LoginForm({
                                         type="password"
                                         placeholder="******"
                                         className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                                        onChange={e => handleSetState('password', e.target.value, setPayload)}
                                     />
                                     <IconKey className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                                 </div>

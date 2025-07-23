@@ -1,11 +1,12 @@
 import { GitHubRepoApiData } from "../repositories/definitions";
 
 export async function getAuthenticatedUserRepos(accessToken: string | undefined): Promise<GitHubRepoApiData[]> {
+    let allRepos: GitHubRepoApiData[] = [];
+    
     if (!accessToken) {
-        throw new Error('GitHub access token is missing.');
+        return allRepos;
     }
 
-    let allRepos: GitHubRepoApiData[] = [];
     let page = 1;
     const per_page = 100;
 
