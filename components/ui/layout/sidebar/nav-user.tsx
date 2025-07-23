@@ -79,7 +79,7 @@ export function NavUser() {
 									await signOut();
 								}}
 							>
-								<button className="flex items-center gap-x-2 cursor-pointer">
+								<button className="flex items-center gap-x-2 cursor-pointer w-full">
 									<IconLogout />
 									<div className="hidden md:block">Sign Out</div>
 								</button>
