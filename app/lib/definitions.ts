@@ -28,5 +28,6 @@ export type SignupPayload = {
 export type CustomResponse = {
 	success?: boolean;
 	message?: string;
-	error?: string
+	data?: object;
+	error?: string;
 }

@@ -7,8 +7,24 @@ import { config } from "../auth";
 import { GitHubRepoDataForSelection } from "./definitions";
 import { CustomResponse } from "../definitions";
 import { checkForSession } from "../utils";
+import { revalidatePath } from "next/cache";
+import z from "zod";
 
 const ITEMS_PER_PAGE = 10;
+
+const FormSchema = z.object({
+    id: z.coerce.bigint(),
+    name: z.string(),
+    full_name: z.string(),
+    description: z.string().nullable(),
+    html_url: z.string().url(),
+    private: z.boolean(),
+    language: z.string().nullable(),
+    stargazers_count: z.coerce.number(),
+    forks_count: z.coerce.number(),
+    updated_at: z.string(),
+});
+
 
 export async function getUserSelectedRepositories(
     query: string,
@@ -70,17 +86,19 @@ export async function addSelectedRepository(
     checkForSession(session);
 
     try {
+        const repository = FormSchema.parse(githubRepoData)
+
         const repoDataForPrisma = {
-            githubRepoId: BigInt(githubRepoData.id),
-            name: githubRepoData.name,
-            fullName: githubRepoData.full_name,
-            description: githubRepoData.description,
-            htmlUrl: githubRepoData.html_url,
-            private: githubRepoData.private,
-            language: githubRepoData.language,
-            stargazersCount: githubRepoData.stargazers_count,
-            forksCount: githubRepoData.forks_count,
-            updatedAtGitHub: new Date(githubRepoData.updated_at),
+            githubRepoId: repository.id,
+            name: repository.name,
+            fullName: repository.full_name,
+            description: repository.description,
+            htmlUrl: repository.html_url,
+            private: repository.private,
+            language: repository.language,
+            stargazersCount: repository.stargazers_count,
+            forksCount: repository.forks_count,
+            updatedAtGitHub: new Date(repository.updated_at),
         };
 
         const existingRepo = await prisma.userSelectedRepository.findFirst({
@@ -101,6 +119,7 @@ export async function addSelectedRepository(
             },
         })
 
+        revalidatePath('/dashboard/repositories');
         return { success: true, message: 'Repository added successfully!' };
     } catch (error) {
         console.error('Failed to add selected repository:', error);
