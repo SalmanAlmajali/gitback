@@ -107,7 +107,7 @@ export default function ImportRepo({
                         name='query'
                         type='search'
                         placeholder='Search...'
-                        onClick={e => setSearch(e.target.value)}
+                        onChange={e => setSearch(e.target.value)}
                         isHidden={session.data?.accessToken === undefined}
                         icon={<IconSearch className={clsx("pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500",
                             {
@@ -135,7 +135,7 @@ export default function ImportRepo({
                     )}
                     <div className={clsx("rounded-xl h-screen overflow-y-scroll no-scrollbar border border-neutral-300 dark:border-neutral-700",
                         {
-                            'hidden': session.data?.accessToken === undefined
+                            'hidden': session.data?.accessToken === undefined || filteredRepos.length === 0,
                         }
                     )}>
                         {paginatedRepos.map((repo, i) => (
