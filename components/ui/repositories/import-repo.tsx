@@ -13,6 +13,8 @@ import clsx from 'clsx';
 import { formatDateToLocal } from '@/app/lib/utils';
 import { getLanguageColorClass, getLanguageHexColor } from '@/app/lib/language-color-map';
 import { useSession } from 'next-auth/react';
+import ConnectGitHub from '../connect-github';
+import { useSearchParams } from 'next/navigation';
 
 export default function ImportRepo({
     repositories,
@@ -20,7 +22,7 @@ export default function ImportRepo({
     repositories: GitHubRepoApiData[];
 }) {
     const session = useSession();
-    
+
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [addingRepoId, setAddingRepoId] = useState<number | null>(null);
@@ -82,6 +84,17 @@ export default function ImportRepo({
         return getPaginationItems(currentPage, totalPages);
     }, [currentPage, totalPages]);
 
+    const searchParams = useSearchParams();
+    const githubLinkedStatus = searchParams.get('githubLinked');
+
+    useEffect(() => {
+        if (githubLinkedStatus === 'success') {
+            toast.success('Success', {
+                description: 'GitHub account successfully linked!',
+            });
+        }
+    }, [githubLinkedStatus]);
+
     return (
         <>
             <Card className='shadow-none ring-0 md:ring-1'>
@@ -89,21 +102,24 @@ export default function ImportRepo({
                     <CardTitle className={`${figtree.className} text-2xl font-bold leading-tight`}>Import Git Repository</CardTitle>
                     <CardDescription>All repositories below are fetch from your GitHub account. Cool isn't it</CardDescription>
                 </CardHeader>
-                <CardContent className={clsx('space-y-4 p-0 md:px-6',
-                    {
-                        'pointer-events-none': session.data?.accessToken === undefined,
-                    }
-                )}>
+                <CardContent className='space-y-4 p-0 md:px-6'>
                     <MyInput
                         name='query'
                         type='search'
                         placeholder='Search...'
                         onClick={e => setSearch(e.target.value)}
-                        icon={<IconSearch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
+                        isHidden={session.data?.accessToken === undefined}
+                        icon={<IconSearch className={clsx("pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500",
+                            {
+                                'hidden': session.data?.accessToken === undefined
+                            }
+                        )} />}
                     />
                     {!session?.data?.accessToken && (
-                        <div className="text-center p-8">
+                        <div className="text-center p-8 space-y-4">
                             <p className="text-gray-600">This feature is only available to users who are logged in using GitHub account.</p>
+                            <p className="text-gray-600">Or</p>
+                            <ConnectGitHub />
                         </div>
                     )}
                     {repositories.length === 0 && search === '' && session.data?.accessToken && (
