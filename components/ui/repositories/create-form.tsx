@@ -11,6 +11,7 @@ import { addSelectedRepository } from '@/app/lib/repositories/actions';
 import { GitHubRepoDataForSelection } from '@/app/lib/repositories/definitions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { figtree } from '@/components/fonts';
 
 function CreateForm() {
     const router = useRouter();
@@ -53,8 +54,8 @@ function CreateForm() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle></CardTitle>
-                <CardDescription></CardDescription>
+                <CardTitle className={`${figtree.className} text-2xl font-bold leading-tight`}>Create Repository Manually</CardTitle>
+                <CardDescription>If U are logged in using GitHub account or already linked your account, consider importing your repository directly from GitHub. It's so much easier.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit}>
