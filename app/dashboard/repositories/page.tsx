@@ -10,6 +10,7 @@ import { Suspense } from 'react';
 import SkeletonTable from '@/components/ui/repositories/skeleton';
 import { formatDateToLocal, getNestedValue } from '@/app/lib/utils';
 import { IconPlus } from '@tabler/icons-react';
+import { getLanguageColorClass, getLanguageHexColor } from '@/app/lib/language-color-map';
 
 export const metadata: Metadata = {
 	title: "Repositories"
@@ -34,6 +35,22 @@ const renderCell: RenderCellFunction<RepositoriesTableRow> = (
 	column: TableHeadColumn
 ): React.ReactNode => {
 	const cellValue = getNestedValue(data, column.key);
+
+	switch (column.key) {
+		case 'language':
+			return (
+				cellValue && (
+					<span className={`flex items-center ${getLanguageColorClass(cellValue)}`}>
+						<span className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: getLanguageHexColor(cellValue) }}></span>
+						{cellValue}
+					</span>
+				)
+			);
+		case 'description':
+			return (
+				cellValue === null ? '-' : cellValue
+			);
+	}
 
 	switch (column.type) {
 		case 'link':
@@ -82,7 +99,7 @@ async function Page({
 			<PageTitle title='Repositories' />
 			<div className="flex items-center justify-between gap-2 md:mt-8">
 				<Search placeholder='Search repositories...' />
-				<LinkButton href='/dashboard/repositories/create' className='py-3 px-4 rounded-lg'>
+				<LinkButton href='/dashboard/repositories/create' className='py-2 px-4 rounded-lg'>
 					<span className='hidden md:block'>Create Repository</span>
 					<IconPlus className="h-5" />
 				</LinkButton>
