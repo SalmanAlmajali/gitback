@@ -1,14 +1,16 @@
+import clsx from 'clsx';
 import React from 'react'
 
 interface MyInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     icon: React.ReactNode;
+    isHidden?: boolean | undefined;
 }
 
 interface MyTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     icon: React.ReactNode;
 }
 
-const MyInput: React.FC<MyInputProps> = ({ name, type, placeholder, icon, ...props }: MyInputProps) => {
+const MyInput: React.FC<MyInputProps> = ({ name, type, placeholder, icon, isHidden, ...props }: MyInputProps) => {
     return (
         <div className="relative mt-2 rounded-md">
             <div className="relative">
@@ -17,7 +19,11 @@ const MyInput: React.FC<MyInputProps> = ({ name, type, placeholder, icon, ...pro
                     name={name}
                     type={type}
                     placeholder={placeholder}
-                    className="peer block w-full rounded-md border py-2 pl-10 text-sm placeholder:text-gray-500"
+                    className={clsx("peer block w-full rounded-md border py-2 pl-10 text-sm placeholder:text-gray-500",
+                        {
+                            'hidden': isHidden
+                        }
+                    )}
                     {...props}
                 />
                 {icon}
