@@ -1,7 +1,7 @@
 import { PageTitle } from '../layout'
 import Table from '@/components/ui/table'
 import { Metadata } from 'next';
-import { getUserSelectedRepositories } from '@/app/lib/repositories/actions';
+import { deleteRepository, getUserSelectedRepositories } from '@/app/lib/repositories/actions';
 import Search from '@/components/ui/search';
 import LinkButton from '@/components/ui/link-button';
 import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
@@ -124,7 +124,7 @@ async function Page({
 					tableHead={tableHead}
 					renderCell={renderCell}
 					fetchFilteredFunction={getUserSelectedRepositories}
-				// deleteAction={deleteRepository}
+					deleteAction={deleteRepository}
 				/>
 			</Suspense>
 		</div>

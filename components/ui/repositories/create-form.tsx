@@ -28,7 +28,7 @@ function CreateForm() {
         stargazers_count: 0,
         forks_count: 0,
         updated_at: '',
-    })
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -195,15 +195,15 @@ function CreateForm() {
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="forksCount" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="forks_count" className="mb-2 block text-sm font-medium">
                             Repository Fork Count
                         </label>
                         <MyInput
-                            name={'forksCount'}
+                            name={'forks_count'}
                             type={'number'}
                             placeholder={'Enter the repository fork count'}
                             icon={<IconGitFork className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('forksCount', e.target.value, setPayload)}
+                            onChange={e => handleSetState('forks_count', e.target.value, setPayload)}
                             min={0}
                         />
                     </div>

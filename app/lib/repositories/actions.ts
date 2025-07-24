@@ -75,6 +75,8 @@ export async function getUserSelectedRepositories(
     } catch (error) {
         console.error('Failed to read user selected repositories from DB:', error);
         return { error: 'Failed to retrieve selected repositories. Please try again.' };
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
@@ -124,5 +126,88 @@ export async function addSelectedRepository(
     } catch (error) {
         console.error('Failed to add selected repository:', error);
         return { error: `Failed to add repository. ${error.message || 'Please try again.'}` };
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+export async function getRepositoryById(id: string): Promise<CustomResponse> {
+    try {
+        const respository = await prisma.userSelectedRepository.findUnique({
+            where: {
+                id,
+            },
+        });
+
+        return { success: true, data: respository };
+    } catch (error) {
+        console.error('Failed to get selected repository:', error);
+        return { error: `Failed to get repository. ${error.message || 'Please try again.'}` };
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+export async function updateRepository(id: string, githubRepoData: GitHubRepoDataForSelection): Promise<CustomResponse> {
+    try {
+        const repository = FormSchema.parse(githubRepoData);
+
+        const repoDataForPrisma = {
+            githubRepoId: repository.id,
+            name: repository.name,
+            fullName: repository.full_name,
+            description: repository.description,
+            htmlUrl: repository.html_url,
+            private: repository.private,
+            language: repository.language,
+            stargazersCount: repository.stargazers_count,
+            forksCount: repository.forks_count,
+            updatedAtGitHub: new Date(repository.updated_at),
+        };
+
+        const existingRepo = await prisma.userSelectedRepository.findFirst({
+            where: {
+                id,
+            },
+        });
+
+        if (!existingRepo) {
+            return { success: false, message: 'Repository with this id is not exist.' };
+        }
+
+        await prisma.userSelectedRepository.update({
+            where: {
+                id,
+            },
+            data: {
+                ...repoDataForPrisma,
+            },
+        });
+
+        revalidatePath('/dashboard/repositories');
+        return { success: true, message: 'Repository updated successfully!' };
+    } catch (error) {
+        console.error('Failed to update selected repository:', error);
+        return { error: `Failed to update repository. ${error.message || 'Please try again.'}` };
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+export async function deleteRepository(id: string): Promise<CustomResponse> {
+    try {
+        await prisma.userSelectedRepository.delete({
+            where: {
+                id,
+            },
+        });
+
+        revalidatePath('/dashboard/repositories');
+        return { success: true, message: 'Repository deleted successfully!' };
+    } catch (error) {
+        console.error('Failed to delete selected repository:', error);
+        return { error: `Failed to delete repository. ${error.message || 'Please try again.'}` };
+    } finally {
+        await prisma.$disconnect();
     }
 }

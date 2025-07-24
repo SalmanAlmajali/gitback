@@ -3,9 +3,10 @@ import Link from 'next/link';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
 import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
-import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
+import { CustomResponse, RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
 import { UserSelectedRepository } from '@prisma/client';
 import clsx from 'clsx';
+import { toast } from 'sonner';
 
 export default async function Table({
     pageName,
@@ -14,7 +15,7 @@ export default async function Table({
     tableHead,
     renderCell,
     fetchFilteredFunction,
-    // deleteAction,
+    deleteAction,
 }: {
     pageName: string;
     query: string;
@@ -22,9 +23,23 @@ export default async function Table({
     tableHead: TableHeadColumn[];
     renderCell: RenderCellFunction<RepositoriesTableRow>
     fetchFilteredFunction: (query: string, currentPage: number) => Promise<{ data?: UserSelectedRepository[]; error?: string }>;
-    // deleteAction: (id: string) => Promise<void>;
+    deleteAction: (id: string) => Promise<CustomResponse>;
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
+
+    const Delete = ({ id }: { id: string }) => {
+        return (
+            <form action={async () => {
+                'use server';
+
+                await deleteAction(id)
+            }}>
+                <button type="submit" className="rounded-md border p-2 bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
+                    <IconTrash className="w-5" />
+                </button>
+            </form>
+        )
+    }
 
     return (
         <div className='px-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 '>
@@ -144,16 +159,7 @@ export default async function Table({
                                             <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                                 <div className="flex justify-end gap-3">
                                                     <Update id={tr?.id} pageName={pageName} />
-                                                    {/* <form action={async() => {
-                                                    'use server';
-
-                                                    await deleteAction(tr?.id)
-                                                }}>
-                                                    <button type="submit" className="rounded-md border p-2 bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
-                                                        <span className="sr-only">Delete</span>
-                                                        <IconTrash className="w-5" />
-                                                    </button>
-                                                </form> */}
+                                                    <Delete id={tr?.id} />
                                                 </div>
                                             </td>
                                         </tr>

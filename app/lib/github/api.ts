@@ -83,3 +83,31 @@ async function dbSelectedRepositories(): Promise<{
         return { error: 'Failed to retrieve selected repositories. Please try again.' };
     }
 }
+
+export async function getARepository(accessToken: string | undefined, owner: string, repo: string): Promise<GitHubRepoApiData | null | undefined> {
+    let repository: null | GitHubRepoApiData = null;
+
+    if (!accessToken) {
+        return repository;
+    }
+
+    while (true) {
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/vnd.github+json',
+            },
+            cache: 'no-store',
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`GitHub API error (status: ${response.status}):`, errorText);
+            throw new Error(`Failed to fetch GitHub repositories: ${response.statusText}. Details: ${errorText}`);
+        }
+        
+        repository = await response.json();
+
+        return repository;
+    }
+}
