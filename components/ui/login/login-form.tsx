@@ -10,9 +10,10 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { figtree } from "@/components/fonts"
-import { IconKey, IconMail } from "@tabler/icons-react"
+import { IconKey, IconLoader2, IconLogin2, IconMail } from "@tabler/icons-react"
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export const clientSignIn = async (email: string | undefined, password: string | undefined) => {
     const result = await signIn('credentials', {
@@ -32,16 +33,24 @@ export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+    const [loading, setLoading] = useState(false);
+
     const handleSubmit = async (formData: FormData) => {
+        setLoading(true);
+
         const [email, password] = [
             formData.get('email')?.toString(),
             formData.get('password')?.toString(),
         ];
 
         clientSignIn(email, password);
+
+        setLoading(false);
     }
 
     const handleSignWithGitHub = async () => {
+        setLoading(true);
+
         const result = await signIn('github', {
             callbackUrl: '/dashboard',
         })
@@ -51,6 +60,8 @@ export function LoginForm({
                 description: result?.error,
             })
         }
+
+        setLoading(false);
     }
 
     return (
@@ -75,7 +86,7 @@ export function LoginForm({
                                         name="email"
                                         type="email"
                                         placeholder="Enter your email address"
-                                        className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                        className="peer block w-full rounded-md border py-2 pl-10 text-sm placeholder:text-gray-500"
                                     />
                                     <IconMail className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                                 </div>
@@ -92,7 +103,7 @@ export function LoginForm({
                                         name="password"
                                         type="password"
                                         placeholder="******"
-                                        className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                        className="peer block w-full rounded-md border py-2 pl-10 text-sm placeholder:text-gray-500"
                                     />
                                     <IconKey className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                                 </div>
@@ -102,8 +113,18 @@ export function LoginForm({
                             variant="outline"
                             className="w-full"
                             type="submit"
+                            disabled={loading}
                         >
-                            Login
+                            {loading ? (
+                                <>
+                                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Login...
+                                </>
+                            ) : (
+                                <>
+                                    <IconLogin2 />
+                                    Login
+                                </>
+                            )}
                         </Button>
                     </form>
                     <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -116,6 +137,7 @@ export function LoginForm({
                         className="w-full"
                         type="button"
                         onClick={handleSignWithGitHub}
+                        disabled={loading}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path

@@ -1,10 +1,10 @@
 'use client';
 
 import { cn } from '@/app/lib/utils'
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card'
 import { figtree } from '@/components/fonts'
-import { IconKey, IconMail, IconUser } from '@tabler/icons-react'
+import { IconKey, IconLoader2, IconMail, IconUser, IconUserPlus } from '@tabler/icons-react'
 import { Button } from '../button'
 import MyInput from '../my-input';
 import { createUser } from '@/app/lib/users/actions';
@@ -15,7 +15,11 @@ function SignupForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+    const [loading, setLoading] = useState(false);
+    
     const handleSubmit = async (formData: FormData) => {
+        setLoading(true);
+
         const [email, password, confirmPassword] = [
             formData.get('email')?.toString(),
             formData.get('password')?.toString(),
@@ -26,6 +30,8 @@ function SignupForm({
             toast.error("Validation error", {
                 description: "Password does not match",
             });
+
+            setLoading(false);
             return;
         }
 
@@ -38,6 +44,8 @@ function SignupForm({
                 description: result?.error || result?.message,
             });
         }
+
+        setLoading(false);
     }
 
     return (
@@ -101,8 +109,18 @@ function SignupForm({
                             variant="outline"
                             className="w-full"
                             type="submit"
+                            disabled={loading}
                         >
-                            Sign Up
+                           {loading ? (
+                                <>
+                                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Sign Up...
+                                </>
+                            ) : (
+                                <>
+                                    <IconUserPlus />
+                                    Sign Up
+                                </>
+                            )}
                         </Button>
                     </form>
                     <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -114,6 +132,7 @@ function SignupForm({
                         variant="default"
                         className="w-full"
                         type="button"
+                        disabled={loading}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path
