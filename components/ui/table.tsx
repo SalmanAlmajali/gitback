@@ -52,6 +52,7 @@ export default async function Table({
                                                 </div>
                                                 <p className={`${figtree.className} text-sm text-gray-500`}>{tableHead[3].label}: {renderCell(repository, tableHead[3])}</p>
                                                 <p className={`${figtree.className} text-sm text-gray-500`}>{tableHead[4].label}: {renderCell(repository, tableHead[4])}</p>
+                                                <p className={`${figtree.className} text-sm text-gray-500`}>{renderCell(repository, tableHead[5])}</p>
                                             </div>
                                         </div>
                                         <div className="flex flex-col w-full items-start justify-between gap-y-4 pt-4">

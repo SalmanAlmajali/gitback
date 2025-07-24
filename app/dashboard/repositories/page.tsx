@@ -11,6 +11,7 @@ import SkeletonTable from '@/components/ui/repositories/skeleton';
 import { formatDateToLocal, getNestedValue } from '@/app/lib/utils';
 import { IconPlus } from '@tabler/icons-react';
 import { getLanguageColorClass, getLanguageHexColor } from '@/app/lib/language-color-map';
+import clsx from 'clsx';
 
 export const metadata: Metadata = {
 	title: "Repositories"
@@ -45,6 +46,17 @@ const renderCell: RenderCellFunction<RepositoriesTableRow> = (
 						{cellValue}
 					</span>
 				)
+			);
+		case 'private':
+			return (
+				<span className={clsx('px-2 py-0.5 rounded-full text-xs',
+					{
+						'bg-red-100 text-red-800': cellValue === true,
+						'bg-green-100 text-green-800': cellValue === false,
+					}
+				)}>
+					{cellValue ? 'Private' : 'Public'}
+				</span>
 			);
 		case 'description':
 			return (
