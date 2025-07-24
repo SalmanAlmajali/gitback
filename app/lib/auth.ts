@@ -34,7 +34,7 @@ export const config: AuthOptions = {
         GitHub({
             clientId: process.env.GITHUB_ID as string,
             clientSecret: process.env.GITHUB_SECRET as string,
-            authorization: { params: { scope: 'repo user' } },
+            authorization: { params: { scope: 'repo user read:user user:email' } },
         }),
         Credentials({
             name: "Credentials",
@@ -80,6 +80,7 @@ export const config: AuthOptions = {
             if (account?.provider === 'github' && account.access_token) {
                 token.accessToken = account.access_token;
             }
+
             return token;
         },
         // Adjust session object with user ID and access token
@@ -90,7 +91,41 @@ export const config: AuthOptions = {
             if (token.accessToken) {
                 session.accessToken = token.accessToken;
             }
+
+            if (!token.accessToken) {
+                const linkedGitHubAccount = await prisma.account.findFirst({
+                    where: {
+                        userId: token.id,
+                        provider: 'github',
+                    },
+                    select: {
+                        access_token: true,
+                    },
+                });
+
+                if (linkedGitHubAccount?.access_token) {
+                    session.accessToken = linkedGitHubAccount.access_token;
+                }
+            }
+
             return session;
+        },
+    },
+    events: {
+        linkAccount: async ({ user, profile }) => {
+            try {
+                await prisma.user.update({
+                    where: {
+                        id: user.id,
+                    },
+                    data: {
+                        image: profile.image,
+                    }
+                });
+            } catch (error) {
+                console.error("Failed to update user in linkAccount:", error);
+                throw new Error("Failed to update user after linking account.");
+            }
         },
     },
     secret: process.env.NEXTAUTH_SECRET, // Environment variable for JWT signing
