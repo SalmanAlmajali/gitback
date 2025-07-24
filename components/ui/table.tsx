@@ -50,18 +50,18 @@ export default async function Table({
                                                         {renderCell(repository, tableHead[0])}
                                                     </p>
                                                 </div>
-                                                <p className={`${figtree.className} text-sm text-gray-500`}>{renderCell(repository, tableHead[3])}</p>
-                                                <p className={`${figtree.className} text-sm text-gray-500`}>{renderCell(repository, tableHead[4])}</p>
+                                                <p className={`${figtree.className} text-sm text-gray-500`}>{tableHead[3].label}: {renderCell(repository, tableHead[3])}</p>
+                                                <p className={`${figtree.className} text-sm text-gray-500`}>{tableHead[4].label}: {renderCell(repository, tableHead[4])}</p>
                                             </div>
                                         </div>
                                         <div className="flex flex-col w-full items-start justify-between gap-y-4 pt-4">
                                             <div className='space-y-2'>
-                                                <small className={figtree.className}>Github Owner:</small>
+                                                <small className={figtree.className}>{tableHead[9].label}:</small>
                                                 <p className="text-xl font-medium">
-                                                    {renderCell(repository, tableHead[1])}
+                                                    {renderCell(repository, tableHead[9])}
                                                 </p>
-                                                <small className={figtree.className}>Github Repository:</small>
-                                                <p className="text-xl font-medium">{renderCell(repository, tableHead[2])}</p>
+                                                <small className={figtree.className}>{tableHead[2].label}:</small>
+                                                {renderCell(repository, tableHead[2])}
                                             </div>
                                             <div className="flex justify-end gap-2">
                                                 <Update id={repository.id} pageName={pageName} />
@@ -110,12 +110,12 @@ export default async function Table({
                                                             return (
                                                                 <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
                                                                     {
-                                                                        "rounded-l-xl": index === 0 && i === 0 && datas?.data?.length === 1,
+                                                                        "rounded-l-xl": index === 0 && i === 0 && datas?.totalCount === 1,
                                                                         "rounded-tl-xl": index === 0 && i === 0,
-                                                                        "rounded-r-xl": index === tableHead.length - 1 && datas?.data?.length === 1,
+                                                                        "rounded-r-xl": index === tableHead.length - 1 && datas?.totalCount === 1,
                                                                         "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
-                                                                        "rounded-bl-xl": index === 0 && i === datas?.data?.length - 1,
-                                                                        "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.data?.length - 1,
+                                                                        "rounded-bl-xl": index === 0 && i === datas?.totalCount - 1,
+                                                                        "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.totalCount - 1,
                                                                     }
                                                                 )} key={td?.key}>
                                                                     {renderCell(tr, td)}
@@ -126,12 +126,12 @@ export default async function Table({
                                                             return (
                                                                 <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
                                                                     {
-                                                                        "rounded-l-xl": index === 0 && i === 0 && datas?.data?.length === 1,
+                                                                        "rounded-l-xl": index === 0 && i === 0 && datas?.totalCount === 1,
                                                                         "rounded-tl-xl": index === 0 && i === 0,
-                                                                        "rounded-r-xl": index === tableHead.length - 1 && datas?.data?.length === 1,
+                                                                        "rounded-r-xl": index === tableHead.length - 1 && datas?.totalCount === 1,
                                                                         "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
-                                                                        "rounded-bl-xl": index === 0 && i === datas?.data?.length - 1,
-                                                                        "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.data?.length - 1,
+                                                                        "rounded-bl-xl": index === 0 && i === datas?.totalCount - 1,
+                                                                        "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.totalCount - 1,
                                                                     }
                                                                 )} key={td?.key}>
                                                                     {renderCell(tr, td)}
@@ -172,6 +172,6 @@ const Update = ({ id, pageName }: { id: string, pageName: string }) => (
         href={`/dashboard/${pageName.toLowerCase()}/${id}/edit`}
         className="rounded-md border p-2 bg-blue-600 hover:bg-blue-700 transition-colors"
     >
-        <IconPencil className="w-5" />
+        <IconPencil className="w-5 text-white" />
     </Link>
 )
