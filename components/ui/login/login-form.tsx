@@ -11,23 +11,10 @@ import {
 } from "@/components/ui/card"
 import { figtree } from "@/components/fonts"
 import { IconKey, IconLoader2, IconLogin2, IconMail } from "@tabler/icons-react"
-import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-import { useState } from "react";
-
-export const clientSignIn = async (email: string | undefined, password: string | undefined) => {
-    const result = await signIn('credentials', {
-        email,
-        password,
-        callbackUrl: '/dashboard',
-    });
-
-    if (result?.error !== null && (typeof result?.error === 'string')) {
-        toast.error("Error", {
-            description: result?.error,
-        })
-    }
-}
+import { useActionState, useEffect, useState } from "react";
+import { authenticate } from "@/app/lib/users/actions";
+import { signIn } from "next-auth/react";
 
 export function LoginForm({
     className,
@@ -35,18 +22,16 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (formData: FormData) => {
-        setLoading(true);
+    const [errorMessage, formAction, isPending] = useActionState(
+        authenticate,
+        undefined,
+    );
 
-        const [email, password] = [
-            formData.get('email')?.toString(),
-            formData.get('password')?.toString(),
-        ];
-
-        clientSignIn(email, password);
-
-        setLoading(false);
-    }
+    useEffect(() => {
+        toast.error("Error", {
+            description: errorMessage
+        });
+    }, [errorMessage]);
 
     const handleSignWithGitHub = async () => {
         setLoading(true);
@@ -64,6 +49,7 @@ export function LoginForm({
         setLoading(false);
     }
 
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card>
@@ -74,7 +60,7 @@ export function LoginForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <form action={handleSubmit}>
+                    <form action={formAction}>
                         <div className="mb-4">
                             <label htmlFor="email" className="mb-2 block text-sm font-medium">
                                 Email
@@ -113,9 +99,9 @@ export function LoginForm({
                             variant="outline"
                             className="w-full"
                             type="submit"
-                            disabled={loading}
+                            disabled={isPending}
                         >
-                            {loading ? (
+                            {isPending ? (
                                 <>
                                     <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Login...
                                 </>
@@ -137,7 +123,7 @@ export function LoginForm({
                         className="w-full"
                         type="button"
                         onClick={handleSignWithGitHub}
-                        disabled={loading}
+                        disabled={isPending}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path
