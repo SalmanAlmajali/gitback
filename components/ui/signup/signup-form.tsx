@@ -21,8 +21,7 @@ function SignupForm({
     const handleSubmit = async (formData: FormData) => {
         setLoading(true);
 
-        const [email, password, confirmPassword] = [
-            formData.get('email')?.toString(),
+        const [password, confirmPassword] = [
             formData.get('password')?.toString(),
             formData.get('confirmPassword')?.toString(),
         ];

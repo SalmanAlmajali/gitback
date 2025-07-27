@@ -55,7 +55,20 @@ export default function ImportRepo({
 
     const handleAddRepo = async (repo: GitHubRepoApiData) => {
         setAddingRepoId(repo.id);
-        const result = await addSelectedRepository(repo);
+
+        const formData = new FormData();
+        formData.append("githubRepoId", repo.id.toString());
+        formData.append("name", repo.name);
+        formData.append("fullName", repo.full_name);
+        formData.append("description", repo.description ?? '');
+        formData.append("htmlUrl", repo.html_url);
+        formData.append("private", repo.private ? 'true' : 'false');
+        formData.append("language", repo.language ?? '');
+        formData.append("stargazersCount", repo.stargazers_count.toString());
+        formData.append("forksCount", repo.forks_count.toString());
+        formData.append("updatedAtGitHub", repo.updated_at);
+
+        const result = await addSelectedRepository(formData);
 
         if (result.success) {
             toast.success('Success!', {

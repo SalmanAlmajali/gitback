@@ -6,7 +6,6 @@ import { UserSelectedRepository } from '@prisma/client';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
 import { figtree } from '@/components/fonts';
 import MyInput, { MyTextArea } from '../my-input';
-import { handleSetState } from '@/app/lib/utils';
 import { useState } from 'react';
 import LinkButton from '../link-button';
 import { updateRepository } from '@/app/lib/repositories/actions';
@@ -29,28 +28,13 @@ export default function EditForm({
         update: false,
     });
 
-    const [payload, setPayload] = useState({
-        id: 0,
-        name: repository?.name,
-        full_name: repository?.fullName,
-        description: repository?.description,
-        html_url: repository?.htmlUrl,
-        private: repository?.private,
-        language: repository?.language,
-        stargazers_count: repository?.stargazersCount,
-        forks_count: repository?.forksCount,
-        updated_at: repository?.updatedAt.toString(),
-    });
-
-    const updateRepositoryWithId = async (e) => {
-        e.preventDefault();
-
+    const updateRepositoryWithId = async (formData: FormData) => {
         setLoading(prevState => ({
             ...prevState,
             update: true,
         }))
 
-        const result = await updateRepository(repository.id, payload)
+        const result = await updateRepository(repository.id, formData)
 
         if (result?.success) {
             toast.success('Success', {
@@ -69,7 +53,7 @@ export default function EditForm({
         }))
     }
 
-    const handleSync = async (e) => {
+    const handleSync = async (e: any) => {
         e.preventDefault();
 
         setLoading(prevState => ({
@@ -80,30 +64,38 @@ export default function EditForm({
         const owner = repository.fullName.split('/', 1)[0];
         const result = await getARepository(session.data?.accessToken, owner, repository.name)
 
-        const updateResult = await updateRepository(repository.id, {
-            id: result!.id,
-            name: result!.name,
-            full_name: result!.full_name,
-            description: result!.description,
-            html_url: result!.html_url,
-            private: result!.private,
-            language: result!.language,
-            stargazers_count: result!.stargazers_count,
-            forks_count: result!.forks_count,
-            updated_at: result!.updated_at,
-        });
+        if (result.data) {
+            const formData = new FormData();
+            formData.append("githubRepoId", result.data.id.toString());
+            formData.append("name", result.data.name);
+            formData.append("fullName", result.data.full_name);
+            formData.append("description", result.data.description ?? '');
+            formData.append("htmlUrl", result.data.html_url);
+            formData.append("private", result.data.private ? 'true' : 'false');
+            formData.append("language", result.data.language ?? '');
+            formData.append("stargazersCount", result.data.stargazers_count.toString());
+            formData.append("forksCount", result.data.forks_count.toString());
+            formData.append("updatedAtGitHub", result.data.updated_at);
 
-        if (updateResult?.success) {
-            toast.success('Success', {
-                description: updateResult?.message
-            });
-            router.push('/dashboard/repositories');
+            const updateResult = await updateRepository(repository.id, formData);
+
+            if (updateResult?.success) {
+                toast.success('Success', {
+                    description: updateResult?.message
+                });
+                router.push('/dashboard/repositories');
+            } else {
+                toast.error("Error", {
+                    description: updateResult?.error || updateResult?.message,
+                });
+            }
+
         } else {
             toast.error("Error", {
-                description: updateResult?.error || updateResult?.message,
-            });
+                description: result.error
+            })
         }
-
+        
         setLoading(prevState => ({
             ...prevState,
             sync: false,
@@ -143,18 +135,17 @@ export default function EditForm({
                 </CardAction>
             </CardHeader>
             <CardContent>
-                <form onSubmit={updateRepositoryWithId}>
+                <form action={updateRepositoryWithId}>
                     <div className="mb-4">
-                        <label htmlFor="id" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="githubRepoId" className="mb-2 block text-sm font-medium">
                             GitHub Repository Id
                         </label>
                         <MyInput
-                            name={'id'}
+                            name={'githubRepoId'}
                             type={'number'}
                             placeholder={"Enter your GitHub repository Id"}
                             icon={<IconId className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('id', e.target.value, setPayload)}
-                            defaultValue={repository.githubRepoId}
+                            defaultValue={Number(repository.githubRepoId)}
                             required
                         />
                     </div>
@@ -167,21 +158,19 @@ export default function EditForm({
                             type={'text'}
                             placeholder={"Enter your GitHub repository name"}
                             icon={<IconGitBranch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('name', e.target.value, setPayload)}
                             defaultValue={repository.name}
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="full_name" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="fullName" className="mb-2 block text-sm font-medium">
                             GitHub Repository Full Name
                         </label>
                         <MyInput
-                            name={'full_name'}
+                            name={'fullName'}
                             type={'text'}
                             placeholder={"GitHub repository full name (ownername/repo_name)"}
                             icon={<IconGitBranch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('full_name', e.target.value, setPayload)}
                             defaultValue={repository.fullName}
                             required
                         />
@@ -193,20 +182,18 @@ export default function EditForm({
                         <MyTextArea
                             name={'description'}
                             icon={<IconTextCaption className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('description', e.target.value, setPayload)}
-                            defaultValue={repository.description}
+                            defaultValue={repository.description ?? ''}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="html_url" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="htmlUrl" className="mb-2 block text-sm font-medium">
                             URL To The Repository On GitHub
                         </label>
                         <MyInput
-                            name={'html_url'}
+                            name={'htmlUrl'}
                             type={'url'}
                             placeholder={'Enter the repository URL'}
                             icon={<IconLink className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('html_url', e.target.value, setPayload)}
                             defaultValue={repository.htmlUrl}
                             required
                         />
@@ -224,10 +211,6 @@ export default function EditForm({
                                         type="radio"
                                         value="public"
                                         className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                        onChange={() => setPayload((prevState) => ({
-                                            ...prevState,
-                                            private: false
-                                        }))}
                                         defaultChecked={repository.private === false}
                                     />
                                     <label
@@ -244,10 +227,6 @@ export default function EditForm({
                                         type="radio"
                                         value="private"
                                         className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                        onChange={() => setPayload((prevState) => ({
-                                            ...prevState,
-                                            private: true
-                                        }))}
                                         defaultChecked={repository.private === true}
                                     />
                                     <label
@@ -269,48 +248,44 @@ export default function EditForm({
                             type={'text'}
                             placeholder={'Enter the repository primary language'}
                             icon={<IconCode className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('language', e.target.value, setPayload)}
-                            defaultValue={repository.language}
+                            defaultValue={repository.language ?? ''}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="stargazers_count" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="stargazersCount" className="mb-2 block text-sm font-medium">
                             Repository Stars Count
                         </label>
                         <MyInput
-                            name={'stargazers_count'}
+                            name={'stargazersCount'}
                             type={'number'}
                             placeholder={'Enter the repository stars count'}
                             icon={<IconStar className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('stargazers_count', e.target.value, setPayload)}
                             min={0}
                             defaultValue={repository.stargazersCount}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="forks_count" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="forksCount" className="mb-2 block text-sm font-medium">
                             Repository Fork Count
                         </label>
                         <MyInput
-                            name={'forks_count'}
+                            name={'forksCount'}
                             type={'number'}
                             placeholder={'Enter the repository fork count'}
                             icon={<IconGitFork className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('forks_count', e.target.value, setPayload)}
                             min={0}
                             defaultValue={repository.forksCount}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="updated_at" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="updatedAtGitHub" className="mb-2 block text-sm font-medium">
                             Last Repository Updated Time
                         </label>
                         <MyInput
-                            name={'updated_at'}
+                            name={'updatedAtGitHub'}
                             type={'datetime-local'}
                             placeholder={'Enter the last repository updated time'}
                             icon={<IconClock className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('updated_at', e.target.value, setPayload)}
                             min={0}
                             defaultValue={repository.updatedAt.toISOString().split('Z', 1)[0]}
                         />

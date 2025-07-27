@@ -3,12 +3,10 @@
 import React, { useState } from 'react'
 import MyInput, { MyTextArea } from '../my-input'
 import { IconClock, IconCode, IconDeviceFloppy, IconEyeCheck, IconEyeExclamation, IconGitBranch, IconGitFork, IconId, IconLink, IconLoader2, IconStar, IconTextCaption } from '@tabler/icons-react';
-import { handleSetState } from '@/app/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
 import { Button } from '../button';
 import LinkButton from '../link-button';
 import { addSelectedRepository } from '@/app/lib/repositories/actions';
-import { GitHubRepoDataForSelection } from '@/app/lib/repositories/definitions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { figtree } from '@/components/fonts';
@@ -17,25 +15,11 @@ function CreateForm() {
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
-    const [payload, setPayload] = useState<GitHubRepoDataForSelection>({
-        id: 0,
-        name: '',
-        full_name: '',
-        description: '',
-        html_url: '',
-        private: false,
-        language: '',
-        stargazers_count: 0,
-        forks_count: 0,
-        updated_at: '',
-    });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const handleSubmit = async (formData: FormData) => {
         setLoading(true);
 
-        const result = await addSelectedRepository(payload);
+        const result = await addSelectedRepository(formData);
 
         if (result?.success) {
             toast.success('Success', {
@@ -58,17 +42,16 @@ function CreateForm() {
                 <CardDescription>If U are logged in using GitHub account or already linked your account, consider importing your repository directly from GitHub. It's so much easier.</CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit}>
+                <form action={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="id" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="githubRepoId" className="mb-2 block text-sm font-medium">
                             GitHub Repository Id
                         </label>
                         <MyInput
-                            name={'id'}
+                            name={'githubRepoId'}
                             type={'number'}
                             placeholder={"Enter your GitHub repository Id"}
                             icon={<IconId className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('id', e.target.value, setPayload)}
                             required
                         />
                     </div>
@@ -81,20 +64,18 @@ function CreateForm() {
                             type={'text'}
                             placeholder={"Enter your GitHub repository name"}
                             icon={<IconGitBranch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('name', e.target.value, setPayload)}
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="full_name" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="fullName" className="mb-2 block text-sm font-medium">
                             GitHub Repository Full Name
                         </label>
                         <MyInput
-                            name={'full_name'}
+                            name={'fullName'}
                             type={'text'}
                             placeholder={"GitHub repository full name (ownername/repo_name)"}
                             icon={<IconGitBranch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('full_name', e.target.value, setPayload)}
                             required
                         />
                     </div>
@@ -104,20 +85,18 @@ function CreateForm() {
                         </label>
                         <MyTextArea
                             name={'description'}
-                            icon={<IconTextCaption className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('description', e.target.value, setPayload)}
+                            icon={<IconTextCaption className="pointer-events-none absolute left-3 top-10 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="html_url" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="htmlUrl" className="mb-2 block text-sm font-medium">
                             URL To The Repository On GitHub
                         </label>
                         <MyInput
-                            name={'html_url'}
+                            name={'htmlUrl'}
                             type={'url'}
                             placeholder={'Enter the repository URL'}
                             icon={<IconLink className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('html_url', e.target.value, setPayload)}
                             required
                         />
                     </div>
@@ -132,13 +111,8 @@ function CreateForm() {
                                         id="public"
                                         name="private"
                                         type="radio"
-                                        value="public"
+                                        value="false"
                                         className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                        onChange={() => setPayload((prevState) => ({
-                                            ...prevState,
-                                            private: false
-                                        }))}
-                                        checked={payload.private === false}
                                     />
                                     <label
                                         htmlFor="public"
@@ -152,12 +126,8 @@ function CreateForm() {
                                         id="private"
                                         name="private"
                                         type="radio"
-                                        value="private"
+                                        value="true"
                                         className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                        onChange={() => setPayload((prevState) => ({
-                                            ...prevState,
-                                            private: true
-                                        }))}
                                     />
                                     <label
                                         htmlFor="private"
@@ -178,45 +148,41 @@ function CreateForm() {
                             type={'text'}
                             placeholder={'Enter the repository primary language'}
                             icon={<IconCode className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('language', e.target.value, setPayload)}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="stargazers_count" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="stargazersCount" className="mb-2 block text-sm font-medium">
                             Repository Stars Count
                         </label>
                         <MyInput
-                            name={'stargazers_count'}
+                            name={'stargazersCount'}
                             type={'number'}
                             placeholder={'Enter the repository stars count'}
                             icon={<IconStar className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('stargazers_count', e.target.value, setPayload)}
                             min={0}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="forks_count" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="forksCount" className="mb-2 block text-sm font-medium">
                             Repository Fork Count
                         </label>
                         <MyInput
-                            name={'forks_count'}
+                            name={'forksCount'}
                             type={'number'}
                             placeholder={'Enter the repository fork count'}
                             icon={<IconGitFork className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('forks_count', e.target.value, setPayload)}
                             min={0}
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="updated_at" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="updatedAtGitHub" className="mb-2 block text-sm font-medium">
                             Last Repository Updated Time
                         </label>
                         <MyInput
-                            name={'updated_at'}
+                            name={'updatedAtGitHub'}
                             type={'datetime-local'}
                             placeholder={'Enter the last repository updated time'}
                             icon={<IconClock className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            onChange={e => handleSetState('updated_at', e.target.value, setPayload)}
                             min={0}
                         />
                     </div>

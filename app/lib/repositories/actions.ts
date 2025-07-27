@@ -12,16 +12,16 @@ import { prisma } from "../prisma";
 const ITEMS_PER_PAGE = 10;
 
 const FormSchema = z.object({
-    id: z.coerce.bigint(),
+    githubRepoId: z.coerce.bigint(),
     name: z.string(),
-    full_name: z.string(),
+    fullName: z.string(),
     description: z.string().nullable(),
-    html_url: z.string().url(),
+    htmlUrl: z.string().url(),
     private: z.boolean(),
     language: z.string().nullable(),
-    stargazers_count: z.coerce.number(),
-    forks_count: z.coerce.number(),
-    updated_at: z.string(),
+    stargazersCount: z.coerce.number(),
+    forksCount: z.coerce.number(),
+    updatedAtGitHub: z.string(),
 });
 
 
@@ -81,32 +81,30 @@ export async function getUserSelectedRepositories(
 }
 
 export async function addSelectedRepository(
-    githubRepoData: GitHubRepoDataForSelection
+    formData: FormData
 ): Promise<CustomResponse> {
     const session = await auth();
 
     checkForSession(session);
 
     try {
-        const repository = FormSchema.parse(githubRepoData)
-
-        const repoDataForPrisma = {
-            githubRepoId: repository.id,
-            name: repository.name,
-            fullName: repository.full_name,
-            description: repository.description,
-            htmlUrl: repository.html_url,
-            private: repository.private,
-            language: repository.language,
-            stargazersCount: repository.stargazers_count,
-            forksCount: repository.forks_count,
-            updatedAtGitHub: new Date(repository.updated_at),
-        };
+        const repository = FormSchema.parse({
+            githubRepoId: formData.get('githubRepoId'),
+            name: formData.get('name'),
+            fullName: formData.get('fullName'),
+            description: formData.get('description'),
+            htmlUrl: formData.get('htmlUrl'),
+            private: formData.get('private') === 'true' ? true : false,
+            language: formData.get('language'),
+            stargazersCount: formData.get('stargazersCount'),
+            forksCount: formData.get('forksCount'),
+            updatedAtGitHub: new Date((formData.get('updatedAtGitHub') as string)).toISOString(),
+        })
 
         const existingRepo = await prisma.userSelectedRepository.findFirst({
             where: {
                 userId: session?.user?.id,
-                githubRepoId: repoDataForPrisma.githubRepoId,
+                githubRepoId: repository.githubRepoId,
             },
         });
 
@@ -116,14 +114,14 @@ export async function addSelectedRepository(
 
         await prisma.userSelectedRepository.create({
             data: {
-                userId: session?.user?.id,
-                ...repoDataForPrisma,
+                userId: session!.user.id,
+                ...repository,
             },
         })
 
         revalidatePath('/dashboard/repositories');
         return { success: true, message: 'Repository added successfully!' };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to add selected repository:', error);
         return { error: `Failed to add repository. ${error.message || 'Please try again.'}` };
     }
@@ -138,28 +136,26 @@ export async function getRepositoryById(id: string): Promise<CustomResponse> {
         });
 
         return { success: true, data: respository };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to get selected repository:', error);
         return { error: `Failed to get repository. ${error.message || 'Please try again.'}` };
     }
 }
 
-export async function updateRepository(id: string, githubRepoData: GitHubRepoDataForSelection): Promise<CustomResponse> {
+export async function updateRepository(id: string, formData: FormData): Promise<CustomResponse> {
     try {
-        const repository = FormSchema.parse(githubRepoData);
-
-        const repoDataForPrisma = {
-            githubRepoId: repository.id,
-            name: repository.name,
-            fullName: repository.full_name,
-            description: repository.description,
-            htmlUrl: repository.html_url,
-            private: repository.private,
-            language: repository.language,
-            stargazersCount: repository.stargazers_count,
-            forksCount: repository.forks_count,
-            updatedAtGitHub: new Date(repository.updated_at),
-        };
+        const repository = FormSchema.parse({
+            githubRepoId: formData.get('githubRepoId'),
+            name: formData.get('name'),
+            fullName: formData.get('fullName'),
+            description: formData.get('description'),
+            htmlUrl: formData.get('htmlUrl'),
+            private: formData.get('private') === 'true' ? true : false,
+            language: formData.get('language'),
+            stargazersCount: formData.get('stargazersCount'),
+            forksCount: formData.get('forksCount'),
+            updatedAtGitHub: new Date((formData.get('updatedAtGitHub') as string)).toISOString(),
+        });
 
         const existingRepo = await prisma.userSelectedRepository.findFirst({
             where: {
@@ -176,13 +172,13 @@ export async function updateRepository(id: string, githubRepoData: GitHubRepoDat
                 id,
             },
             data: {
-                ...repoDataForPrisma,
+                ...repository,
             },
         });
 
         revalidatePath('/dashboard/repositories');
         return { success: true, message: 'Repository updated successfully!' };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to update selected repository:', error);
         return { error: `Failed to update repository. ${error.message || 'Please try again.'}` };
     }
@@ -198,7 +194,7 @@ export async function deleteRepository(id: string): Promise<CustomResponse> {
 
         revalidatePath('/dashboard/repositories');
         return { success: true, message: 'Repository deleted successfully!' };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to delete selected repository:', error);
         return { error: `Failed to delete repository. ${error.message || 'Please try again.'}` };
     }
