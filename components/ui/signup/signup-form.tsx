@@ -9,12 +9,13 @@ import { Button } from '../button'
 import MyInput from '../my-input';
 import { createUser } from '@/app/lib/users/actions';
 import { toast } from 'sonner';
-import { clientSignIn } from '../login/login-form';
+import { useRouter } from 'next/navigation';
 
 function SignupForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     
     const handleSubmit = async (formData: FormData) => {
@@ -38,7 +39,10 @@ function SignupForm({
         const result = await createUser(formData);
 
         if (result?.success) {
-            clientSignIn(email, password);
+            toast.success("Success", {
+                description: result.message,
+            });
+            router.push('/dashboard');
         } else {
             toast.error("Error", {
                 description: result?.error || result?.message,
