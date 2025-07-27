@@ -37,7 +37,7 @@ export const getNestedValue = (obj: any, path: string) => {
 };
 
 export const checkForSession = (session: Session | null) => {
-	if (!session?.user?.id) {
+	if (!session) {
         return {
             error: 'Unauthorized: No active session found.'
         };
