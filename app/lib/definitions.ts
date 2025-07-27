@@ -28,6 +28,6 @@ export type SignupPayload = {
 export type CustomResponse = {
 	success?: boolean;
 	message?: string;
-	data?: object | undefined;
+	data?: object | undefined | null;
 	error?: string;
 }
