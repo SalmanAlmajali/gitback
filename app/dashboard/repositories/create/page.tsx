@@ -3,16 +3,15 @@ import { Breadcrumbs } from '@/app/dashboard/layout'
 import { Metadata } from 'next'
 import ImportRepo from '@/components/ui/repositories/import-repo'
 import { getAuthenticatedUserRepos } from '@/app/lib/github/api'
-import { getServerSession } from 'next-auth'
-import { config } from '@/app/lib/auth'
 import CreateForm from '@/components/ui/repositories/create-form'
+import { auth } from '@/auth'
 
 export const metadata: Metadata = {
     title: "Create Repository"
 }
 
 async function Page() {
-    const session = await getServerSession(config);
+    const session = await auth();
 
     const repositories = await getAuthenticatedUserRepos(session?.accessToken);
     

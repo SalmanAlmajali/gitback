@@ -1,14 +1,13 @@
 'use server';
 
 import { UserSelectedRepository } from "@prisma/client";
-import prisma from "../prisma";
-import { getServerSession } from "next-auth";
-import { config } from "../auth";
 import { GitHubRepoDataForSelection } from "./definitions";
 import { CustomResponse } from "../definitions";
 import { checkForSession } from "../utils";
 import { revalidatePath } from "next/cache";
 import z from "zod";
+import { auth } from "@/auth";
+import { prisma } from "../prisma";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -27,24 +26,27 @@ const FormSchema = z.object({
 
 
 export async function getUserSelectedRepositories(
-    query: string,
-    currentPage: number,
+    query?: string | undefined,
+    currentPage?: number | undefined,
 ): Promise<{
     data?: UserSelectedRepository[]; totalCount?: number, error?: string
 }> {
-    const session = await getServerSession(config);
+    const session = await auth();
+    let offset = 0;
 
     checkForSession(session);
-
-    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-    const searchLower = query.toLowerCase();
 
     try {
         const whereClause: any = {
             userId: session?.user?.id,
         };
 
+        if (currentPage) {
+            offset = (currentPage - 1) * ITEMS_PER_PAGE;
+        }
+
         if (query) {
+            const searchLower = query.toLowerCase();
             whereClause.OR = [
                 { user: { name: { contains: searchLower, mode: 'insensitive' } } },
                 { user: { email: { contains: searchLower, mode: 'insensitive' } } },
@@ -75,15 +77,13 @@ export async function getUserSelectedRepositories(
     } catch (error) {
         console.error('Failed to read user selected repositories from DB:', error);
         return { error: 'Failed to retrieve selected repositories. Please try again.' };
-    } finally {
-        await prisma.$disconnect();
     }
 }
 
 export async function addSelectedRepository(
     githubRepoData: GitHubRepoDataForSelection
 ): Promise<CustomResponse> {
-    const session = await getServerSession(config);
+    const session = await auth();
 
     checkForSession(session);
 
@@ -116,7 +116,7 @@ export async function addSelectedRepository(
 
         await prisma.userSelectedRepository.create({
             data: {
-                userId: session?.user.id,
+                userId: session?.user?.id,
                 ...repoDataForPrisma,
             },
         })
@@ -126,8 +126,6 @@ export async function addSelectedRepository(
     } catch (error) {
         console.error('Failed to add selected repository:', error);
         return { error: `Failed to add repository. ${error.message || 'Please try again.'}` };
-    } finally {
-        await prisma.$disconnect();
     }
 }
 
@@ -143,8 +141,6 @@ export async function getRepositoryById(id: string): Promise<CustomResponse> {
     } catch (error) {
         console.error('Failed to get selected repository:', error);
         return { error: `Failed to get repository. ${error.message || 'Please try again.'}` };
-    } finally {
-        await prisma.$disconnect();
     }
 }
 
@@ -189,8 +185,6 @@ export async function updateRepository(id: string, githubRepoData: GitHubRepoDat
     } catch (error) {
         console.error('Failed to update selected repository:', error);
         return { error: `Failed to update repository. ${error.message || 'Please try again.'}` };
-    } finally {
-        await prisma.$disconnect();
     }
 }
 
@@ -207,7 +201,5 @@ export async function deleteRepository(id: string): Promise<CustomResponse> {
     } catch (error) {
         console.error('Failed to delete selected repository:', error);
         return { error: `Failed to delete repository. ${error.message || 'Please try again.'}` };
-    } finally {
-        await prisma.$disconnect();
     }
 }
