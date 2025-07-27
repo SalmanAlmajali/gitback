@@ -1,8 +1,7 @@
+import { prisma } from "../prisma";
 import { GitHubRepoApiData } from "../repositories/definitions";
-import { getServerSession } from "next-auth";
-import { config } from "../auth";
 import { checkForSession } from "../utils";
-import prisma from "../prisma";
+import { auth } from "@/auth";
 
 export async function getAuthenticatedUserRepos(accessToken: string | undefined): Promise<GitHubRepoApiData[]> {
     let allFilteredRepos: GitHubRepoApiData[] = [];
@@ -63,7 +62,7 @@ export async function getAuthenticatedUserRepos(accessToken: string | undefined)
 async function dbSelectedRepositories(): Promise<{
     data?: { githubRepoId: bigint }[]; error?: string
 }> {
-    const session = await getServerSession(config);
+    const session = await auth();
 
     checkForSession(session);
 
