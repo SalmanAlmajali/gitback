@@ -4,6 +4,7 @@ import * as React from "react"
 import {
     IconBookmarks,
     IconDashboard,
+    IconMessages,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/ui/layout/sidebar/nav-main"
@@ -37,6 +38,11 @@ const data = {
             title: "Repositories",
             url: "/dashboard/repositories",
             icon: IconBookmarks,
+        },
+        {
+            title: "Feedbacks",
+            url: "/dashboard/feedbacks",
+            icon: IconMessages,
         },
     ],
 }
