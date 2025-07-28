@@ -23,6 +23,7 @@ export function NavMain({
 	}[]
 }) {
 	const pathname = usePathname();
+	
 	return (
 		<SidebarGroup>
 			<SidebarGroupContent className="flex flex-col gap-2">
@@ -37,7 +38,7 @@ export function NavMain({
 								tooltip={item.title}
 								className={clsx('',
 									{
-										"bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear": pathname == item?.url
+										"bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear": pathname === item?.url,
 									}
 								)}
 								asChild
