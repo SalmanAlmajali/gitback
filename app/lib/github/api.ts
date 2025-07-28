@@ -1,4 +1,3 @@
-import { CustomResponse } from "../definitions";
 import { prisma } from "../prisma";
 import { GitHubRepoApiData } from "../repositories/definitions";
 import { checkForSession } from "../utils";
