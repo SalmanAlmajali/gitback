@@ -1,14 +1,20 @@
-import { IconPencil, IconTrash } from '@tabler/icons-react';
+import { IconBookmarkOff, IconBookmarksOff, IconCube, IconMessagesOff, IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
 import Link from 'next/link';
 import { figtree } from '../fonts';
 import { Separator } from './separator';
-import { RepositoriesTableRow } from '@/app/lib/repositories/definitions';
 import { CustomResponse, RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
-import { UserSelectedRepository } from '@prisma/client';
 import clsx from 'clsx';
-import { toast } from 'sonner';
+import LinkButton from './link-button';
 
-export default async function Table({
+type FetchResponse<T> = {
+    data?: T[];
+    totalCount?: number;
+    error?: string;
+};
+
+type FetchFilteredFunction<T> = (query: string, currentPage: number) => Promise<FetchResponse<T>>;
+
+export default async function Table<T extends { id: string }>({
     pageName,
     query,
     currentPage,
@@ -21,8 +27,8 @@ export default async function Table({
     query: string;
     currentPage: number;
     tableHead: TableHeadColumn[];
-    renderCell: RenderCellFunction<RepositoriesTableRow>
-    fetchFilteredFunction: (query: string, currentPage: number) => Promise<{ data?: UserSelectedRepository[]; error?: string }>;
+    renderCell: RenderCellFunction<T>;
+    fetchFilteredFunction: FetchFilteredFunction<T>;
     deleteAction: (id: string) => Promise<CustomResponse>;
 }) {
     const datas = await fetchFilteredFunction(query, currentPage);
@@ -65,22 +71,28 @@ export default async function Table({
                                                         {renderCell(repository, tableHead[0])}
                                                     </p>
                                                 </div>
-                                                <p className={`${figtree.className} text-sm text-gray-500`}>{tableHead[3].label}: {renderCell(repository, tableHead[3])}</p>
-                                                <p className={`${figtree.className} text-sm text-gray-500`}>{tableHead[4].label}: {renderCell(repository, tableHead[4])}</p>
-                                                <p className={`${figtree.className} text-sm text-gray-500`}>{renderCell(repository, tableHead[5])}</p>
                                             </div>
                                         </div>
                                         <div className="flex flex-col w-full items-start justify-between gap-y-4 pt-4">
                                             <div className='space-y-2'>
-                                                <small className={figtree.className}>{tableHead[9].label}:</small>
-                                                <p className="text-xl font-medium">
-                                                    {renderCell(repository, tableHead[9])}
-                                                </p>
-                                                <small className={figtree.className}>{tableHead[2].label}:</small>
-                                                {renderCell(repository, tableHead[2])}
+                                                {
+                                                    tableHead?.map((td, index) => {
+                                                        if (index !== 0) {
+                                                            return (
+                                                                <div key={index}>
+                                                                    <small className={figtree.className}>{td.label}:</small>
+                                                                    <p className="text-base font-medium">
+                                                                        {renderCell(repository, td)}
+                                                                    </p>
+                                                                </div>
+                                                            )
+                                                        }
+                                                    })
+                                                }
                                             </div>
                                             <div className="flex justify-end gap-2">
                                                 <Update id={repository.id} pageName={pageName} />
+                                                <Delete id={repository?.id} />
                                             </div>
                                         </div>
                                     </div>
@@ -120,41 +132,21 @@ export default async function Table({
                                                 {i + 1}.
                                             </td>
                                             {
-                                                tableHead?.map((td, index) => {
-                                                    switch (td?.type) {
-                                                        case 'date':
-                                                            return (
-                                                                <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
-                                                                    {
-                                                                        "rounded-l-xl": index === 0 && i === 0 && datas?.totalCount === 1,
-                                                                        "rounded-tl-xl": index === 0 && i === 0,
-                                                                        "rounded-r-xl": index === tableHead.length - 1 && datas?.totalCount === 1,
-                                                                        "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
-                                                                        "rounded-bl-xl": index === 0 && i === datas?.totalCount - 1,
-                                                                        "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.totalCount - 1,
-                                                                    }
-                                                                )} key={td?.key}>
-                                                                    {renderCell(tr, td)}
-                                                                </td>
-                                                            )
-
-                                                        default:
-                                                            return (
-                                                                <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
-                                                                    {
-                                                                        "rounded-l-xl": index === 0 && i === 0 && datas?.totalCount === 1,
-                                                                        "rounded-tl-xl": index === 0 && i === 0,
-                                                                        "rounded-r-xl": index === tableHead.length - 1 && datas?.totalCount === 1,
-                                                                        "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
-                                                                        "rounded-bl-xl": index === 0 && i === datas?.totalCount - 1,
-                                                                        "rounded-br-xl": index === tableHead?.length - 1 && i === datas?.totalCount - 1,
-                                                                    }
-                                                                )} key={td?.key}>
-                                                                    {renderCell(tr, td)}
-                                                                </td>
-                                                            )
-                                                    }
-                                                })
+                                                tableHead?.map((td, index) => (
+                                                    <td className={clsx("whitespace-nowrap px-3 py-3 bg-white dark:bg-neutral-950",
+                                                        {
+                                                            "rounded-l-xl": index === 0 && i === 0 && datas?.totalCount === 1,
+                                                            "rounded-tl-xl": index === 0 && i === 0,
+                                                            "rounded-r-xl": index === tableHead.length - 1 && datas?.totalCount === 1,
+                                                            "rounded-tr-xl": index === tableHead.length - 1 && i === 0,
+                                                            "rounded-bl-xl": index === 0 && datas.totalCount !== undefined && i === datas?.totalCount - 1,
+                                                            "rounded-br-xl": index === tableHead?.length - 1 && datas.totalCount !== undefined && i === datas?.totalCount - 1,
+                                                        }
+                                                    )} key={td?.key}>
+                                                        {renderCell(tr, td)}
+                                                    </td>
+                                                )
+                                                )
                                             }
                                             <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                                 <div className="flex justify-end gap-3">
@@ -167,6 +159,29 @@ export default async function Table({
                                 }
                             </tbody>
                         </table>
+                        {
+                            (datas?.totalCount === 0 || query.length !== 0) && (
+                                <div className='flex flex-col items-center justify-center gap-4 p-4'>
+                                    {pageName === "Repositories" && (
+                                        <IconBookmarksOff className='size-20 stroke-1 stroke-muted-foreground' />
+                                    )}
+                                    {pageName === "Feedbacks" && (
+                                        <IconMessagesOff className='size-20 stroke-1 stroke-muted-foreground' />
+                                    )}
+                                    <h1 className={`${figtree.className} font-bold text-base`}>No {pageName.toLowerCase()} found</h1>
+                                    {!query ? (
+                                        <p className='text-muted-foreground text-sm'>The table is currently empty. Add some data to get started.</p>
+                                    ) : (
+                                        <p className='text-muted-foreground text-sm'>Your search "{query}" did not match any {pageName.toLowerCase()}. Please try again.</p>
+                                    )}
+
+                                    <LinkButton href={`/dashboard/${pageName.toLowerCase()}/create`} className='py-2 px-4 rounded-lg'>
+                                        Create {pageName}
+                                        <IconPlus className="h-5" />
+                                    </LinkButton>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
             </div>
