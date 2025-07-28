@@ -19,7 +19,11 @@ import { useSearchParams } from 'next/navigation';
 export default function ImportRepo({
     repositories,
 }: {
-    repositories: GitHubRepoApiData[];
+    repositories: {
+        success: boolean | null;
+        data?: GitHubRepoApiData[] | null;
+        error?: string | null;
+    };
 }) {
     const session = useSession();
 
@@ -32,12 +36,20 @@ export default function ImportRepo({
 
     const filteredRepos = useMemo(() => {
         const lowerCaseQuery = search.toLowerCase();
-        return repositories.filter(repo =>
-            repo.name.toLowerCase().includes(lowerCaseQuery) ||
-            repo.full_name.toLowerCase().includes(lowerCaseQuery) ||
-            (repo.description && repo.description.toLowerCase().includes(lowerCaseQuery)) ||
-            (repo.language && repo.language.toLowerCase().includes(lowerCaseQuery))
-        );
+
+        if (repositories.data) {
+            return repositories.data.filter(repo =>
+                repo.name.toLowerCase().includes(lowerCaseQuery) ||
+                repo.full_name.toLowerCase().includes(lowerCaseQuery) ||
+                (repo.description && repo.description.toLowerCase().includes(lowerCaseQuery)) ||
+                (repo.language && repo.language.toLowerCase().includes(lowerCaseQuery))
+            );
+        } else {
+            toast.error("Error", {
+                description: repositories.error
+            });
+            return [];
+        }
     }, [repositories, search]);
 
     const totalFilteredRepos = filteredRepos.length;
@@ -110,7 +122,7 @@ export default function ImportRepo({
 
     return (
         <>
-            <Card className='shadow-none ring-0 md:ring-1'>
+            <Card className='shadow-none ring-0 md:ring-1 w-full'>
                 <CardHeader className='p-0 md:px-6'>
                     <CardTitle className={`${figtree.className} text-2xl font-bold leading-tight`}>Import Git Repository</CardTitle>
                     <CardDescription>All repositories below are fetch from your GitHub account. Cool isn't it</CardDescription>
@@ -135,7 +147,7 @@ export default function ImportRepo({
                             <ConnectGitHub />
                         </div>
                     )}
-                    {repositories.length === 0 && search === '' && session.data?.accessToken && (
+                    {!repositories!.data && search === '' && session.data?.accessToken && (
                         <div className="text-center p-8">
                             <p className="text-gray-600">No GitHub repositories found for your account.</p>
                             <p className="text-gray-600">Ensure your GitHub account has public or private repositories, and that you've granted the necessary permissions.</p>
