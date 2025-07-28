@@ -2,8 +2,14 @@ import { prisma } from "@/app/lib/prisma";
 import { auth } from "@/auth";
 import { NextRequest } from "next/server";
 
+declare global {
+  interface BigInt {
+    toJSON(): string;
+  }
+}
+
 BigInt.prototype.toJSON = function () {
-    return this.toString();
+  return this.toString();
 };
 
 const ITEMS_PER_PAGE = 10;
