@@ -9,7 +9,6 @@ export interface Breadcrumb {
 export interface TableHeadColumn {
 	label: string;
 	key: string;
-	type: 'text' | 'number' | 'boolean' | 'date' | 'link';
 	hrefKey?: string;
 }
 
@@ -25,9 +24,9 @@ export type SignupPayload = {
 	confirmPassword: string;
 };
 
-export type CustomResponse = {
+export type CustomResponse<T = any> = {
 	success?: boolean;
 	message?: string;
-	data?: object | undefined | null;
+	data?: T | null;
 	error?: string;
-}
+};
