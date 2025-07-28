@@ -40,17 +40,19 @@ export default function EditForm({
             toast.success('Success', {
                 description: result?.message
             });
+            setLoading(prev => ({ ...prev, update: false }));
             router.push('/dashboard/repositories');
         } else {
             toast.error("Error", {
                 description: result?.error || result?.message,
             });
-        }
 
-        setLoading(prevState => ({
-            ...prevState,
-            update: false,
-        }))
+
+            setLoading(prevState => ({
+                ...prevState,
+                update: false,
+            }))
+        }
     }
 
     const handleSync = async (e: any) => {
@@ -83,6 +85,7 @@ export default function EditForm({
                 toast.success('Success', {
                     description: updateResult?.message
                 });
+                setLoading(prev => ({ ...prev, sync: false }));
                 router.push('/dashboard/repositories');
             } else {
                 toast.error("Error", {
@@ -93,12 +96,12 @@ export default function EditForm({
             toast.error("Error", {
                 description: result.error
             })
+
+            setLoading(prevState => ({
+                ...prevState,
+                sync: false,
+            }))
         }
-        
-        setLoading(prevState => ({
-            ...prevState,
-            sync: false,
-        }))
     }
 
     return (
@@ -195,7 +198,7 @@ export default function EditForm({
                                         id="public"
                                         name="private"
                                         type="radio"
-                                        value="public"
+                                        value="false"
                                         className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
                                         defaultChecked={repository.private === false}
                                     />
@@ -211,7 +214,7 @@ export default function EditForm({
                                         id="private"
                                         name="private"
                                         type="radio"
-                                        value="private"
+                                        value="true"
                                         className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
                                         defaultChecked={repository.private === true}
                                     />
