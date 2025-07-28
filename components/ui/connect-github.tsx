@@ -2,7 +2,6 @@
 
 import { signIn } from 'next-auth/react'
 import React from 'react'
-import { toast } from 'sonner'
 import { Button } from './button'
 import { usePathname } from 'next/navigation';
 
@@ -10,15 +9,9 @@ function ConnectGitHub() {
     const pathname = usePathname();
 
     const handleSignWithGitHub = async () => {
-        const result = await signIn('github', {
+        await signIn('github', {
             callbackUrl: `${pathname}?githubLinked=success`,
         })
-
-        if (result?.error) {
-            toast.error('Linking failed', {
-                description: result?.error,
-            });
-        }
     }
    
     return (
