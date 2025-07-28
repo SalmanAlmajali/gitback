@@ -16,7 +16,7 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 
 	const repository = await getRepositoryById(id);
 
-	if (!repository) {
+	if (!repository.data) {
 		notFound();
 	} else if (!repository.success) {
 		toast.error("Error", {
