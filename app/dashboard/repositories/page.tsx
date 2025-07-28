@@ -90,7 +90,7 @@ const renderCell: RenderCellFunction<RepositoriesTableRow> = (
 	};
 };
 
-async function Page({
+export default async function Page({
 	searchParams,
 }: {
 	searchParams?: Promise<{
@@ -102,7 +102,7 @@ async function Page({
 	const currentPage = Number((await searchParams)?.page) || 1;
 
 	return (
-		<div>
+		<div >
 			<PageTitle title='Repositories' />
 			<div className="flex items-center justify-between gap-2 md:mt-8">
 				<Search placeholder='Search repositories...' />
@@ -125,5 +125,3 @@ async function Page({
 		</div>
 	)
 }
-
-export default Page

@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import { figtree, jetBrainsMono } from "@/components/fonts";
 import { ThemeProvider } from "@/components/ui/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
 	title: {

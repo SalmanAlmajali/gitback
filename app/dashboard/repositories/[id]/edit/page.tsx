@@ -25,7 +25,7 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 	}
 
 	return (
-		<div>
+		<main>
 			<Breadcrumbs
 				breadcrumbs={[
 					{ label: 'Repositories', href: '/dashboard/repositories' },
@@ -37,7 +37,7 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 				]}
 			/>
 			<EditForm repository={repository.data} />
-		</div>
+		</main>
 	)
 }
 
