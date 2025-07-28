@@ -48,7 +48,7 @@ export default async function Table<T extends { id: string }>({
     }
 
     return (
-        <div className='px-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 '>
+        <div className="px-2 rounded-lg bg-neutral-100 dark:bg-neutral-900">
             <div className="mt-6 flow-root overflow-x-scroll rounded-xl no-scrollbar">
                 <div className="inline-block min-w-full align-middle">
                     <div className="py-2 md:pt-0">
@@ -172,7 +172,7 @@ export default async function Table<T extends { id: string }>({
                                     {!query ? (
                                         <p className='text-muted-foreground text-sm'>The table is currently empty. Add some data to get started.</p>
                                     ) : (
-                                        <p className='text-muted-foreground text-sm'>Your search "{query}" did not match any {pageName.toLowerCase()}. Please try again.</p>
+                                        <p className='text-muted-foreground text-sm'>Your search &quot;{query}&quot; did not match any {pageName.toLowerCase()}. Please try again.</p>
                                     )}
 
                                     <LinkButton href={`/dashboard/${pageName.toLowerCase()}/create`} className='py-2 px-4 rounded-lg'>

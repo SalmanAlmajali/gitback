@@ -78,7 +78,7 @@ function CreateForm() {
         <Card className='w-full h-fit sticky top-7'>
             <CardHeader>
                 <CardTitle className={`${figtree.className} text-2xl font-bold leading-tight`}>Create Repository Manually</CardTitle>
-                <CardDescription>If U are logged in using GitHub account or already linked your account, consider importing your repository directly from GitHub. It's so much easier.</CardDescription>
+                <CardDescription>If U are logged in using GitHub account or already linked your account, consider importing your repository directly from GitHub. It&apos;s so much easier.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form action={handleSubmit}>

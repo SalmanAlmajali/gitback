@@ -4,7 +4,7 @@ import { Feedback, UserSelectedRepository } from '@prisma/client'
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
 import { figtree } from '@/components/fonts';
-import { IconAdjustmentsStar, IconAppsFilled, IconBookmarks, IconBugFilled, IconCancel, IconClockFilled, IconDeviceFloppy, IconGitBranch, IconHeading, IconLoader2, IconMail, IconSquareCheckFilled, IconTextCaption, IconUser } from '@tabler/icons-react';
+import { IconAdjustmentsStar, IconAppsFilled, IconBookmarks, IconBugFilled, IconCancel, IconClockFilled, IconDeviceFloppy, IconHeading, IconLoader2, IconMail, IconSquareCheckFilled, IconTextCaption, IconUser } from '@tabler/icons-react';
 import MyInput, { MyTextArea } from '../my-input';
 import { updateFeedback } from '@/app/lib/feedbacks/actions';
 import { toast } from 'sonner';

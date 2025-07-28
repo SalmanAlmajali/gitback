@@ -122,12 +122,12 @@ export default function ImportRepo({
 
     return (
         <>
-            <Card className='shadow-none ring-0 md:ring-1 w-full'>
-                <CardHeader className='p-0 md:px-6'>
+            <Card className="shadow-none ring-0 md:ring-1 w-full">
+                <CardHeader className="p-0 md:px-6">
                     <CardTitle className={`${figtree.className} text-2xl font-bold leading-tight`}>Import Git Repository</CardTitle>
-                    <CardDescription>All repositories below are fetch from your GitHub account. Cool isn't it</CardDescription>
+                    <CardDescription>All repositories below are fetch from your GitHub account. Cool isn&apos;t it</CardDescription>
                 </CardHeader>
-                <CardContent className='space-y-4 p-0 md:px-6'>
+                <CardContent className="space-y-4 p-0 md:px-6">
                     <MyInput
                         name='query'
                         type='search'
@@ -150,12 +150,12 @@ export default function ImportRepo({
                     {!repositories!.data && search === '' && session.data?.accessToken && (
                         <div className="text-center p-8">
                             <p className="text-gray-600">No GitHub repositories found for your account.</p>
-                            <p className="text-gray-600">Ensure your GitHub account has public or private repositories, and that you've granted the necessary permissions.</p>
+                            <p className="text-gray-600">Ensure your GitHub account has public or private repositories, and that you&apos;ve granted the necessary permissions.</p>
                         </div>
                     )}
                     {paginatedRepos.length === 0 && search !== '' && (
                         <div className="text-center p-8">
-                            <p className="text-gray-600">No repositories found matching "{search}".</p>
+                            <p className="text-gray-600">No repositories found matching &quot;{search}&quot;.</p>
                         </div>
                     )}
                     <div className={clsx("rounded-xl h-screen overflow-y-scroll no-scrollbar border border-neutral-300 dark:border-neutral-700",
