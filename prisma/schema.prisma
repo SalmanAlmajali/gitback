@@ -126,8 +126,8 @@ model Feedback {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  feedbackAIResultId String           @unique
-  aiResults          FeedbackAIResult @relation(fields: [feedbackAIResultId], references: [id], onDelete: Cascade)
+  feedbackAIResultId String?           @unique
+  aiResults          FeedbackAIResult? @relation(fields: [feedbackAIResultId], references: [id], onDelete: Cascade)
 }
 
 model FeedbackAIResult {

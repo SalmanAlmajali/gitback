@@ -10,7 +10,6 @@ export default function SkeletonTable({
     tableHead: {
         label: string;
         key: string;
-        type: string;
     }[];
     skeletonRows?: number;
 }) {
