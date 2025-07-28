@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react'
-import MyInput, { MyTextArea } from '../my-input'
-import { IconClock, IconCode, IconDeviceFloppy, IconEyeCheck, IconEyeExclamation, IconGitBranch, IconGitFork, IconId, IconLink, IconLoader2, IconStar, IconTextCaption } from '@tabler/icons-react';
+import MyInput from '../my-input'
+import { IconDeviceFloppy, IconGitBranch, IconLoader2 } from '@tabler/icons-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
 import { Button } from '../button';
 import LinkButton from '../link-button';
@@ -10,8 +10,12 @@ import { addSelectedRepository } from '@/app/lib/repositories/actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { figtree } from '@/components/fonts';
+import { getARepository } from '@/app/lib/github/api';
+import { useSession } from 'next-auth/react';
 
 function CreateForm() {
+    const session = useSession();
+
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
@@ -19,42 +23,65 @@ function CreateForm() {
     const handleSubmit = async (formData: FormData) => {
         setLoading(true);
 
-        const result = await addSelectedRepository(formData);
+        const [name, fullName] = [formData.get('name')?.toString(), formData.get('fullName')?.toString()];
 
-        if (result?.success) {
-            toast.success('Success', {
-                description: result?.message
-            });
-            router.push('/dashboard/repositories');
-        } else {
-            toast.error("Error", {
-                description: result?.error || result?.message,
-            });
+        const repository = await getRepository(name, fullName);
+
+        if (repository.success && repository.data) {
+            const formData = new FormData();
+            formData.append("githubRepoId", repository.data.id.toString());
+            formData.append("name", repository.data.name);
+            formData.append("fullName", repository.data.full_name);
+            formData.append("description", repository.data.description ?? '');
+            formData.append("htmlUrl", repository.data.html_url);
+            formData.append("private", repository.data.private ? 'true' : 'false');
+            formData.append("language", repository.data.language ?? '');
+            formData.append("stargazersCount", repository.data.stargazers_count.toString());
+            formData.append("forksCount", repository.data.forks_count.toString());
+            formData.append("updatedAtGitHub", repository.data.updated_at);
+
+            const result = await addSelectedRepository(formData);
+
+            if (result?.success) {
+                toast.success('Success', {
+                    description: result?.message
+                });
+                router.push('/dashboard/repositories');
+            } else {
+                toast.error("Error", {
+                    description: result?.error || result?.message,
+                });
+            }
         }
 
         setLoading(false);
     }
 
+    const getRepository = async (name: string | undefined, fullName: string | undefined) => {
+        if (name !== undefined && fullName !== undefined) {
+            const owner = fullName.split('/', 1)[0];
+            const result = await getARepository(session.data?.accessToken, owner, name)
+
+            if (result.success && result.data) {
+                return { success: true, data: result.data };
+            } else {
+                toast.error("Error", {
+                    description: result.error
+                })
+            }
+        }
+
+        return { success: false };
+    }
+
     return (
-        <Card>
+        <Card className='w-full h-fit sticky top-7'>
             <CardHeader>
                 <CardTitle className={`${figtree.className} text-2xl font-bold leading-tight`}>Create Repository Manually</CardTitle>
                 <CardDescription>If U are logged in using GitHub account or already linked your account, consider importing your repository directly from GitHub. It's so much easier.</CardDescription>
             </CardHeader>
             <CardContent>
                 <form action={handleSubmit}>
-                    <div className="mb-4">
-                        <label htmlFor="githubRepoId" className="mb-2 block text-sm font-medium">
-                            GitHub Repository Id
-                        </label>
-                        <MyInput
-                            name={'githubRepoId'}
-                            type={'number'}
-                            placeholder={"Enter your GitHub repository Id"}
-                            icon={<IconId className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            required
-                        />
-                    </div>
                     <div className="mb-4">
                         <label htmlFor="name" className="mb-2 block text-sm font-medium">
                             GitHub Repository Name
@@ -77,113 +104,6 @@ function CreateForm() {
                             placeholder={"GitHub repository full name (ownername/repo_name)"}
                             icon={<IconGitBranch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
                             required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="description" className="mb-2 block text-sm font-medium">
-                            Description
-                        </label>
-                        <MyTextArea
-                            name={'description'}
-                            icon={<IconTextCaption className="pointer-events-none absolute left-3 top-10 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="htmlUrl" className="mb-2 block text-sm font-medium">
-                            URL To The Repository On GitHub
-                        </label>
-                        <MyInput
-                            name={'htmlUrl'}
-                            type={'url'}
-                            placeholder={'Enter the repository URL'}
-                            icon={<IconLink className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            required
-                        />
-                    </div>
-                    <fieldset className='mb-4'>
-                        <legend className="mb-2 block text-sm font-medium">
-                            Repository Visibility
-                        </legend>
-                        <div className="rounded-md border px-[14px] py-3">
-                            <div className="flex gap-4">
-                                <div className="flex items-center">
-                                    <input
-                                        id="public"
-                                        name="private"
-                                        type="radio"
-                                        value="false"
-                                        className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                    />
-                                    <label
-                                        htmlFor="public"
-                                        className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
-                                    >
-                                        Public <IconEyeCheck className="h-4 w-4" />
-                                    </label>
-                                </div>
-                                <div className="flex items-center">
-                                    <input
-                                        id="private"
-                                        name="private"
-                                        type="radio"
-                                        value="true"
-                                        className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                    />
-                                    <label
-                                        htmlFor="private"
-                                        className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-red-500 px-3 py-1.5 text-xs font-medium text-white"
-                                    >
-                                        Private <IconEyeExclamation className="h-4 w-4" />
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                    <div className="mb-4">
-                        <label htmlFor="language" className="mb-2 block text-sm font-medium">
-                            Repository Primary Language
-                        </label>
-                        <MyInput
-                            name={'language'}
-                            type={'text'}
-                            placeholder={'Enter the repository primary language'}
-                            icon={<IconCode className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="stargazersCount" className="mb-2 block text-sm font-medium">
-                            Repository Stars Count
-                        </label>
-                        <MyInput
-                            name={'stargazersCount'}
-                            type={'number'}
-                            placeholder={'Enter the repository stars count'}
-                            icon={<IconStar className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            min={0}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="forksCount" className="mb-2 block text-sm font-medium">
-                            Repository Fork Count
-                        </label>
-                        <MyInput
-                            name={'forksCount'}
-                            type={'number'}
-                            placeholder={'Enter the repository fork count'}
-                            icon={<IconGitFork className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            min={0}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="updatedAtGitHub" className="mb-2 block text-sm font-medium">
-                            Last Repository Updated Time
-                        </label>
-                        <MyInput
-                            name={'updatedAtGitHub'}
-                            type={'datetime-local'}
-                            placeholder={'Enter the last repository updated time'}
-                            icon={<IconClock className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            min={0}
                         />
                     </div>
                     <div className='flex justify-end gap-x-2'>

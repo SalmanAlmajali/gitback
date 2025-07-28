@@ -27,7 +27,7 @@ async function Page() {
                     },
                 ]}
             />
-            <div className='grid grid-rows-2 grid-cols-1 gap-4 lg:grid-rows-1 lg:grid-cols-2'>
+            <div className='flex flex-col gap-4 md:flex-row'>
                 <ImportRepo repositories={repositories} />
                 <CreateForm />
             </div>
