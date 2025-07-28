@@ -1,7 +1,6 @@
 'use server';
 
 import { UserSelectedRepository } from "@prisma/client";
-import { GitHubRepoDataForSelection } from "./definitions";
 import { CustomResponse } from "../definitions";
 import { checkForSession } from "../utils";
 import { revalidatePath } from "next/cache";
@@ -23,7 +22,6 @@ const FormSchema = z.object({
     forksCount: z.coerce.number(),
     updatedAtGitHub: z.string(),
 });
-
 
 export async function getUserSelectedRepositories(
     query?: string | undefined,
@@ -48,8 +46,6 @@ export async function getUserSelectedRepositories(
         if (query) {
             const searchLower = query.toLowerCase();
             whereClause.OR = [
-                { user: { name: { contains: searchLower, mode: 'insensitive' } } },
-                { user: { email: { contains: searchLower, mode: 'insensitive' } } },
                 { name: { contains: searchLower, mode: 'insensitive' } },
                 { fullName: { contains: searchLower, mode: 'insensitive' } },
             ];
@@ -68,9 +64,6 @@ export async function getUserSelectedRepositories(
             },
             take: ITEMS_PER_PAGE,
             skip: offset,
-            include: {
-                user: true,
-            },
         });
 
         return { data: repositories, totalCount: totalCount };
@@ -127,7 +120,7 @@ export async function addSelectedRepository(
     }
 }
 
-export async function getRepositoryById(id: string): Promise<CustomResponse> {
+export async function getRepositoryById(id: string): Promise<CustomResponse<UserSelectedRepository>> {
     try {
         const respository = await prisma.userSelectedRepository.findUnique({
             where: {
@@ -142,10 +135,11 @@ export async function getRepositoryById(id: string): Promise<CustomResponse> {
     }
 }
 
+const UpdateScheme = FormSchema.omit({ githubRepoId: true })
+
 export async function updateRepository(id: string, formData: FormData): Promise<CustomResponse> {
     try {
-        const repository = FormSchema.parse({
-            githubRepoId: formData.get('githubRepoId'),
+        const repository = UpdateScheme.parse({
             name: formData.get('name'),
             fullName: formData.get('fullName'),
             description: formData.get('description'),

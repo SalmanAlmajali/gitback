@@ -18,17 +18,15 @@ export const metadata: Metadata = {
 }
 
 const tableHead: TableHeadColumn[] = [
-	{ label: 'Repository', key: 'fullName', type: 'link', hrefKey: 'htmlUrl' },
-	{ label: 'Description', key: 'description', type: 'text' },
-	{ label: 'Language', key: 'language', type: 'text' },
-	{ label: 'Stars', key: 'stargazersCount', type: 'number' },
-	{ label: 'Forks', key: 'forksCount', type: 'number' },
-	{ label: 'Visibility', key: 'private', type: 'boolean' },
-	{ label: 'Last Updated (GitHub)', key: 'updatedAtGitHub', type: 'date' },
-	{ label: 'Added To App', key: 'createdAt', type: 'date' },
-	{ label: 'Last Updated (App)', key: 'updatedAt', type: 'date' },
-	{ label: 'User Name', key: 'user.name', type: 'text' },
-	{ label: 'User Email', key: 'user.email', type: 'text' },
+	{ label: 'Repository', key: 'fullName', hrefKey: 'htmlUrl' },
+	{ label: 'Description', key: 'description', },
+	{ label: 'Language', key: 'language', },
+	{ label: 'Stars', key: 'stargazersCount', },
+	{ label: 'Forks', key: 'forksCount', },
+	{ label: 'Visibility', key: 'private', },
+	{ label: 'Last Updated (GitHub)', key: 'updatedAtGitHub', },
+	{ label: 'Added To App', key: 'createdAt', },
+	{ label: 'Last Updated (App)', key: 'updatedAt', },
 ];
 
 const renderCell: RenderCellFunction<RepositoriesTableRow> = (
@@ -38,6 +36,20 @@ const renderCell: RenderCellFunction<RepositoriesTableRow> = (
 	const cellValue = getNestedValue(data, column.key);
 
 	switch (column.key) {
+		case 'fullName':
+			const href = getNestedValue(data, column.hrefKey || '');
+			if (href && typeof href === 'string') {
+				return (
+					<a
+						href={href}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-blue-600 hover:underline"
+					>
+						{String(cellValue || '')}
+					</a>
+				);
+			}
 		case 'language':
 			return (
 				cellValue && (
@@ -60,39 +72,22 @@ const renderCell: RenderCellFunction<RepositoriesTableRow> = (
 			);
 		case 'description':
 			return (
-				cellValue === null ? '-' : cellValue
+				cellValue === null
+					? '-'
+					: typeof cellValue === 'string' && cellValue.length > 20
+						? cellValue.slice(0, 100) + '...'
+						: cellValue
 			);
-	}
-
-	switch (column.type) {
-		case 'link':
-			const href = getNestedValue(data, column.hrefKey || '');
-			if (href && typeof href === 'string') {
-				return (
-					<a
-						href={href}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-blue-600 hover:underline"
-					>
-						{String(cellValue || '')}
-					</a>
-				);
-			}
-			return String(cellValue || '');
-		case 'boolean':
-			return cellValue === true ? 'Private' : 'Public';
-		case 'date':
+		case 'updatedAtGitHub':
+		case 'createdAt':
+		case 'updatedAt':
 			if (cellValue instanceof Date && !isNaN(cellValue.getTime())) {
 				return formatDateToLocal(cellValue);
 			}
-			return String(cellValue || ''); // Fallback for invalid or non-Date values
-		case 'number':
-			return cellValue !== null && cellValue !== undefined ? String(cellValue) : '';
-		case 'text':
-		default:
 			return String(cellValue || '');
-	}
+		default:
+			return cellValue;
+	};
 };
 
 async function Page({
