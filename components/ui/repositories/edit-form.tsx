@@ -89,7 +89,6 @@ export default function EditForm({
                     description: updateResult?.error || updateResult?.message,
                 });
             }
-
         } else {
             toast.error("Error", {
                 description: result.error
@@ -136,19 +135,6 @@ export default function EditForm({
             </CardHeader>
             <CardContent>
                 <form action={updateRepositoryWithId}>
-                    <div className="mb-4">
-                        <label htmlFor="githubRepoId" className="mb-2 block text-sm font-medium">
-                            GitHub Repository Id
-                        </label>
-                        <MyInput
-                            name={'githubRepoId'}
-                            type={'number'}
-                            placeholder={"Enter your GitHub repository Id"}
-                            icon={<IconId className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                            defaultValue={Number(repository.githubRepoId)}
-                            required
-                        />
-                    </div>
                     <div className="mb-4">
                         <label htmlFor="name" className="mb-2 block text-sm font-medium">
                             GitHub Repository Name
