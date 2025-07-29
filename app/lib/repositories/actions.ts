@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 import { auth } from "@/auth";
 import { prisma } from "../prisma";
+import { deleteImageByRepository } from "../feedbacks/actions";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -180,6 +181,11 @@ export async function updateRepository(id: string, formData: FormData): Promise<
 
 export async function deleteRepository(id: string): Promise<CustomResponse> {
     try {
+        const result = await deleteImageByRepository(id);
+        if (!result.success) {
+            return result;
+        }
+        
         await prisma.userSelectedRepository.delete({
             where: {
                 id,
