@@ -126,8 +126,20 @@ model Feedback {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  images FeedbackImage[]
+
   feedbackAIResultId String?           @unique
   aiResults          FeedbackAIResult? @relation(fields: [feedbackAIResultId], references: [id], onDelete: Cascade)
+}
+
+model FeedbackImage {
+  id String @id @default(cuid())
+
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  feedbackId String
+
+  url       String
+  createdAt DateTime @default(now())
 }
 
 model FeedbackAIResult {
