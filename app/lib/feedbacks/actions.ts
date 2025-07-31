@@ -7,7 +7,7 @@ import { Feedback, FeedbackImage, FeedbackStatus, FeedbackType } from "@prisma/c
 import { CustomResponse } from "../definitions";
 import { revalidatePath } from "next/cache";
 import z from "zod";
-import { FeedbacksTableRow } from "./definitions";
+import { FeedbacksTableRow, FeedbackWithImages } from "./definitions";
 import path from "path";
 import { randomUUID } from "crypto";
 import fs from 'fs/promises';
@@ -37,12 +37,12 @@ const type = (formData: FormData) => {
 
 const status = (formData: FormData) => {
     switch (formData.get('status')) {
-        case 'PENDING':
-            return FeedbackStatus.PENDING;
+        case 'REJECTED':
+            return FeedbackStatus.REJECTED;
         case 'SUBMITTED':
             return FeedbackStatus.SUBMITTED;
         default:
-            return FeedbackStatus.REJECTED;
+            return FeedbackStatus.PENDING;
     }
 };
 
@@ -130,11 +130,16 @@ export async function createFeedback(formData: FormData): Promise<CustomResponse
 
         const images = formData.getAll('images') as File[];
 
-        const saveImageResult = await saveImages(images, result.id);
+        console.log(images);
 
-        if (!saveImageResult.success) {
-            return saveImageResult;
+        if (images[0].size !== 0) {
+            const saveImageResult = await saveImages(images, result.id);
+    
+            if (!saveImageResult.success) {
+                return saveImageResult;
+            }
         }
+
 
         revalidatePath('/dashboard/feedbacks');
         return { success: true, message: 'Feedback added successfully!' };
@@ -144,12 +149,15 @@ export async function createFeedback(formData: FormData): Promise<CustomResponse
     }
 }
 
-export async function getFeedbackId(id: string): Promise<CustomResponse<Feedback>> {
+export async function getFeedbackId(id: string): Promise<CustomResponse<FeedbackWithImages>> {
     try {
         const feedback = await prisma.feedback.findUnique({
             where: {
                 id,
             },
+            include: {
+                images: true,
+            }
         });
 
         return { success: true, data: feedback };
@@ -179,6 +187,18 @@ export async function updateFeedback(id: string, formData: FormData): Promise<Cu
 
         if (!existingFeedback) {
             return { success: false, message: 'Feedback with this id is not exist.' };
+        }
+
+        const images = formData.getAll('images') as File[];
+
+        console.log(images);
+
+        if (images[0].size !== 0) {
+            const saveImageResult = await saveImages(images, id);
+    
+            if (!saveImageResult.success) {
+                return saveImageResult;
+            }
         }
 
         await prisma.feedback.update({
