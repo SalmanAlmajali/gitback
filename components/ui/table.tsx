@@ -160,7 +160,7 @@ export default async function Table<T extends { id: string }>({
                             </tbody>
                         </table>
                         {
-                            (datas?.totalCount === 0 && query.length !== 0) && (
+                            (datas?.totalCount === 0 && (query.length !== 0 || query.length === 0)) && (
                                 <div className='flex flex-col items-center justify-center gap-4 p-4'>
                                     {pageName === "Repositories" && (
                                         <IconBookmarksOff className='size-20 stroke-1 stroke-muted-foreground' />

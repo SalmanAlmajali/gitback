@@ -5,7 +5,7 @@ function ApplicationLogo() {
     return (
         <div className='flex items-center gap-x-2'>
             <SvgIcon className='size-9' />
-            <span className={`${figtree.className} text-2xl font-bold`}>Gitback</span>
+            <span className={`${figtree.className} text-lg md:text-2xl font-bold`}>Gitback</span>
         </div>
 
     )
