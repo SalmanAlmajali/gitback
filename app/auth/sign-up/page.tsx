@@ -1,5 +1,5 @@
 import Squares from '@/components/blocks/Backgrounds/Squares/Squares'
-import SignupForm from '@/components/ui/signup/signup-form'
+import SignupForm from '@/components/ui/sign-up/signup-form'
 import { Toaster } from '@/components/ui/sonner'
 import React from 'react'
 

@@ -16,7 +16,7 @@ import { useActionState, useEffect, useState } from "react";
 import { authenticate } from "@/app/lib/users/actions";
 import { signIn } from "next-auth/react";
 
-export function LoginForm({
+export default function SignInForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
@@ -49,7 +49,7 @@ export function LoginForm({
                 <CardHeader>
                     <CardTitle className={`${figtree.className} text-xl`}>Gitback</CardTitle>
                     <CardDescription>
-                        Please login to continue
+                        Please sign in to continue
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -96,12 +96,12 @@ export function LoginForm({
                         >
                             {isPending ? (
                                 <>
-                                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Login...
+                                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Sign in...
                                 </>
                             ) : (
                                 <>
                                     <IconLogin2 />
-                                    Login
+                                    Sign in
                                 </>
                             )}
                         </Button>
@@ -128,11 +128,11 @@ export function LoginForm({
                                 />
                             </svg>
                         )}
-                        Login with GitHub
+                        Sign in with GitHub
                     </Button>
                     <div className="text-center text-sm">
                         Don&apos;t have an account?{" "}
-                        <a href="/auth/signup" className="underline underline-offset-4">
+                        <a href="/auth/sign-up" className="underline underline-offset-4">
                             Sign up
                         </a>
                     </div>
