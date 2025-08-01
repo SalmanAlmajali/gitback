@@ -2,6 +2,11 @@ import { getUserSelectedRepositories } from '@/app/lib/repositories/actions'
 import React from 'react'
 import { Breadcrumbs } from '../../layout'
 import CreateForm from '@/components/ui/feedbacks/create-form'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: "Create Feedback"
+}
 
 async function Page() {
     const repositories = await getUserSelectedRepositories()
