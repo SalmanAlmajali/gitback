@@ -94,7 +94,6 @@ export const authConfig: NextAuthConfig = {
             return true;
         },
         async jwt({ token, user, account }) {
-            console.log('account', account);
             if (user) {
                 token.id = user.id;
 
