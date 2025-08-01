@@ -4,7 +4,7 @@ import { FeedbackImage, UserSelectedRepository } from '@prisma/client'
 import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
 import { figtree } from '@/components/fonts';
-import { IconAdjustmentsStar, IconAppsFilled, IconBookmarks, IconBugFilled, IconCancel, IconClockFilled, IconDeviceFloppy, IconFileUpload, IconHeading, IconLoader2, IconMail, IconSquareCheckFilled, IconTextCaption, IconTrash, IconUser } from '@tabler/icons-react';
+import { IconAdjustmentsStar, IconAppsFilled, IconBookmarks, IconBugFilled, IconCancel, IconClockFilled, IconDeviceFloppy, IconFileUpload, IconHeading, IconLoader2, IconMail, IconTextCaption, IconTrash, IconUser } from '@tabler/icons-react';
 import MyInput, { MyTextArea } from '../my-input';
 import { deleteImage, updateFeedback } from '@/app/lib/feedbacks/actions';
 import { toast } from 'sonner';
@@ -47,19 +47,13 @@ function EditForm({
         }
     }
 
-    const handleDeleteImage = async (feedbackImage: FeedbackImage, index: number) => {
+    const handleDeleteImage = async (feedbackImage: FeedbackImage) => {
         setIdToDelete(feedbackImage.id)
 
         const result = await deleteImage(feedbackImage)
 
         if (result?.success) {
-            setImages((prev) => {
-                prev.splice(index, 1);
-
-                return [
-                    ...prev
-                ];
-            })
+            setImages(prev => prev.filter(img => img.id !== feedbackImage.id));
 
             toast.success('Success', {
                 description: result?.message
@@ -73,7 +67,7 @@ function EditForm({
             setIdToDelete('');
         }
     }
-    
+
     useEffect(() => {
         setImages(feedback.images);
     }, [feedback])
@@ -223,22 +217,6 @@ function EditForm({
                                         </div>
                                         <div className="flex items-center">
                                             <input
-                                                id="submitted"
-                                                name="status"
-                                                type="radio"
-                                                value="SUBMITTED"
-                                                className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                                defaultChecked={feedback.status === "SUBMITTED"}
-                                            />
-                                            <label
-                                                htmlFor="submitted"
-                                                className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
-                                            >
-                                                Submitted <IconSquareCheckFilled className="h-4 w-4" />
-                                            </label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input
                                                 id="rejected"
                                                 name="status"
                                                 type="radio"
@@ -318,7 +296,7 @@ function EditForm({
                                         <Button
                                             disabled={isDeleting}
                                             variant={'destructive'}
-                                            onClick={() => handleDeleteImage(image, i)}
+                                            onClick={() => handleDeleteImage(image)}
                                         >
                                             {isDeleting ? (
                                                 <IconLoader2 className='animate-spin' />
