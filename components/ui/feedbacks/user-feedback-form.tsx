@@ -21,8 +21,13 @@ function UserFeedbackForm({
 }) {
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (formData: FormData) => {
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+
         setLoading(true);
+
+        const form = e.target;
+        const formData = new FormData(form);
 
         const result = await createFeedback(formData);
 
@@ -49,7 +54,7 @@ function UserFeedbackForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <form action={handleSubmit} className='grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 gap-4'>
+                    <form onSubmit={handleSubmit} encType='multipart/form-data' className='grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 gap-4'>
                         <div>
                             <MyInput
                                 name={'repositoryId'}
