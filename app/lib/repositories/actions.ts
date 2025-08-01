@@ -28,7 +28,7 @@ export async function getUserSelectedRepositories(
     query?: string | undefined,
     currentPage?: number | undefined,
 ): Promise<{
-    data?: UserSelectedRepository[]; totalCount?: number, error?: string
+    success?: boolean, data?: UserSelectedRepository[]; totalCount?: number, totalPages?: number, error?: string
 }> {
     const session = await auth();
     let offset = 0;
@@ -67,10 +67,15 @@ export async function getUserSelectedRepositories(
             skip: offset,
         });
 
-        return { data: repositories, totalCount: totalCount };
+        return {
+            success: true,
+            data: repositories,
+            totalCount: totalCount,
+            totalPages: Math.ceil(Number(totalCount) / ITEMS_PER_PAGE),
+        };
     } catch (error) {
         console.error('Failed to read user selected repositories from DB:', error);
-        return { error: 'Failed to retrieve selected repositories. Please try again.' };
+        return { success: false, error: 'Failed to retrieve selected repositories. Please try again.' };
     }
 }
 
