@@ -5,6 +5,7 @@ import EditForm from '@/components/ui/feedbacks/edit-form';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React from 'react'
+import { toast } from 'sonner';
 
 export const metadata: Metadata = {
 	title: "Edit Feedback"
@@ -21,6 +22,10 @@ async function Page(props: { params: Promise<{ id: string }> }) {
 
 	if (!feedback.data) {
 		notFound();
+	} else if (!feedback.success) {
+		toast.error("Error", {
+			description: feedback?.error || feedback?.message, 
+		});
 	}
 
 	return (
