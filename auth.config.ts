@@ -13,6 +13,10 @@ declare module "next-auth" {
             id: string
         } & DefaultSession["user"]
     }
+
+    interface User {
+        githubAccessToken?: string | null;
+    }
 }
 
 declare module "next-auth/jwt" {
@@ -42,30 +46,33 @@ export const authConfig: NextAuthConfig = {
 
                 if (parsedCredentials.success) {
                     const { email, password } = parsedCredentials.data;
-
                     const user = await prisma.user.findUnique({ where: { email } });
 
                     if (!user || !user.hashedPassword) {
                         return null;
                     }
 
-                    // Now TypeScript knows credentials.password and user.hashedPassword are strings
                     const isValidPassword = await bcrypt.compare(password, user.hashedPassword);
 
                     if (!isValidPassword) {
                         return null;
                     }
 
+                    const githubAccount = await prisma.account.findFirst({
+                        where: {
+                            userId: user.id,
+                            provider: 'github',
+                        },
+                    });
 
-                    // Return the user object if authentication is successful
                     return {
                         id: user.id,
                         name: user.name,
                         email: user.email,
                         image: user.image,
+                        githubAccessToken: githubAccount?.access_token,
                     };
                 }
-
                 return null;
             },
         }),
@@ -76,8 +83,8 @@ export const authConfig: NextAuthConfig = {
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
-
             const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+
             if (isOnDashboard) {
                 if (isLoggedIn) return true;
                 return false;
@@ -86,20 +93,17 @@ export const authConfig: NextAuthConfig = {
             }
             return true;
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user, account }) {
             if (user) {
                 token.id = user.id;
+
+                if (user.githubAccessToken) {
+                    token.accessToken = user.githubAccessToken;
+                }
             }
 
-            if (!token.accessToken) {
-                const githubAccount = await prisma.account.findFirst({
-                    where: {
-                        userId: user.id,
-                        provider: 'github',
-                    },
-                });
-
-                token.accessToken = githubAccount?.access_token ?? undefined;
+            if (account?.provider === 'github') {
+                token.accessToken = account.access_token;
             }
 
             return token;
@@ -111,7 +115,6 @@ export const authConfig: NextAuthConfig = {
             if (token.accessToken) {
                 session.accessToken = token.accessToken;
             }
-
             return session;
         }
     },
