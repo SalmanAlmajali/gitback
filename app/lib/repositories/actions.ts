@@ -1,160 +1,206 @@
-'use server'
+'use server';
 
-import { PrismaClient } from '@prisma/client'
+import { UserSelectedRepository } from "@prisma/client";
+import { CustomResponse } from "../definitions";
+import { checkForSession } from "../utils";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import * as z from "zod";
-import { RepositoryForm } from "./definitions";
-
-const prisma = new PrismaClient();
+import z from "zod";
+import { auth } from "@/auth";
+import { prisma } from "../prisma";
+import { deleteImageByRepository } from "../feedback-images/actions";
 
 const ITEMS_PER_PAGE = 10;
 
 const FormSchema = z.object({
-    id: z.string(),
-    userId: z.string(),
+    githubRepoId: z.coerce.bigint(),
     name: z.string(),
-    githubOwner: z.string(),
-    githubRepo: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
-})
+    fullName: z.string(),
+    description: z.string().nullable(),
+    htmlUrl: z.string().url(),
+    private: z.boolean(),
+    language: z.string().nullable(),
+    stargazersCount: z.coerce.number(),
+    forksCount: z.coerce.number(),
+    updatedAtGitHub: z.string(),
+});
 
-export async function fetchFilteredRepositories(
-    query: string,
-    currentPage: number,
-) {
-    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-    const searchLower = query.toLowerCase();
+export async function getUserSelectedRepositories(
+    query?: string | undefined,
+    currentPage?: number | undefined,
+): Promise<{
+    success?: boolean, data?: UserSelectedRepository[]; totalCount?: number, totalPages?: number, error?: string
+}> {
+    const session = await auth();
+    let offset = 0;
+
+    checkForSession(session);
 
     try {
-        const repositories = await prisma.repository.findMany({
-            where: {
-                OR: [
-                    { user: { name: { contains: searchLower, mode: 'insensitive' } } },
-                    { user: { email: { contains: searchLower, mode: 'insensitive' } } },
-                    { name: { contains: searchLower, mode: 'insensitive' } },
-                    { githubOwner: { contains: searchLower, mode: 'insensitive' } },
-                    { githubRepo: { contains: searchLower, mode: 'insensitive' } },
-                ],
-            },
-            include: {
-                user: true,
-            },
+        const whereClause: any = {
+            userId: session?.user?.id,
+        };
+
+        if (currentPage) {
+            offset = (currentPage - 1) * ITEMS_PER_PAGE;
+        }
+
+        if (query) {
+            const searchLower = query.toLowerCase();
+            whereClause.OR = [
+                { name: { contains: searchLower, mode: 'insensitive' } },
+                { fullName: { contains: searchLower, mode: 'insensitive' } },
+            ];
+        }
+
+        // Get total count
+        const totalCount = await prisma.userSelectedRepository.count({
+            where: whereClause,
+        });
+
+        // Get paginated repositories
+        const repositories = await prisma.userSelectedRepository.findMany({
+            where: whereClause,
             orderBy: {
-                createdAt: 'desc',
+                updatedAt: 'desc',
             },
             take: ITEMS_PER_PAGE,
             skip: offset,
         });
 
-        return repositories;
+        return {
+            success: true,
+            data: repositories,
+            totalCount: totalCount,
+            totalPages: Math.ceil(Number(totalCount) / ITEMS_PER_PAGE),
+        };
     } catch (error) {
-        console.error('Failed to fetch repositories:', error);
-        throw new Error('Failed to fetch repositories from the database.');
-    } finally {
-        await prisma.$disconnect();
+        console.error('Failed to read user selected repositories from DB:', error);
+        return { success: false, error: 'Failed to retrieve selected repositories. Please try again.' };
     }
 }
 
-const CreateRepository = FormSchema.omit({ id: true, createdAt: true, updatedAt: true });
+export async function addSelectedRepository(
+    formData: FormData
+): Promise<CustomResponse> {
+    const session = await auth();
 
-export async function createRepository(formData: FormData) {
-    const { userId, name, githubOwner, githubRepo } = CreateRepository.parse({
-        userId: formData.get('user_id'),
-        name: formData.get('name'),
-        githubOwner: formData.get('github_owner'),
-        githubRepo: formData.get('github_repo'),
-    });
+    checkForSession(session);
 
     try {
-        await prisma.repository.create({
-            data: {
-                userId,
-                name,
-                githubOwner,
-                githubRepo
-            },
-        });
-    } catch (error) {
-        console.error('Failed to create repository:', error);
-        throw new Error('Failed to create repository.');
-    } finally {
-        await prisma.$disconnect();
-        revalidatePath('/dashboard/repositories');
-        redirect('/dashboard/repositories');
-    }
-}
-
-export async function fetchRepositoryById(id: string) {
-    try {
-        const repository: RepositoryForm = await prisma.repository.findUnique({
-            where: {
-                id,
-            },
-            select: {
-                id: true,
-                userId: true,
-                name: true,
-                githubOwner: true,
-                githubRepo: true,
-            },
-        });
-
-        return repository;
-    } catch (error) {
-        console.error('Failed to create repository:', error);
-        throw new Error('Failed to create repository.');
-    } finally {
-        await prisma.$disconnect();
-    }
-}
-
-const UpdateRepository = FormSchema.omit({ id: true, createdAt: true, updatedAt: true });
-
-export async function updateRepository(id: string | undefined, formData: FormData) {
-    const { userId, name, githubOwner, githubRepo } = UpdateRepository.parse({
-        userId: formData.get('user_id'),
-        name: formData.get('name'),
-        githubOwner: formData.get('github_owner'),
-        githubRepo: formData.get('github_repo'),
-    });
-
-    try {
-        await prisma.repository.update({
-            where: {
-                id,
-            },
-            data: {
-                userId,
-                name,
-                githubOwner,
-                githubRepo
-            }
-        });
-    } catch (error) {
-        console.error('Failed to update repository:', error);
-        throw new Error('Failed to update repository.');
-    } finally {
-        await prisma.$disconnect();
-        revalidatePath('/dashboard/repositories');
-        redirect('/dashboard/repositories');
-    }
-}
-
-export async function deleteRepository(id: string) {
-    try {
-        await prisma.repository.delete({
-            where: {
-                id,
-            }
+        const repository = FormSchema.parse({
+            githubRepoId: formData.get('githubRepoId'),
+            name: formData.get('name'),
+            fullName: formData.get('fullName'),
+            description: formData.get('description'),
+            htmlUrl: formData.get('htmlUrl'),
+            private: formData.get('private') === 'true' ? true : false,
+            language: formData.get('language'),
+            stargazersCount: formData.get('stargazersCount'),
+            forksCount: formData.get('forksCount'),
+            updatedAtGitHub: new Date((formData.get('updatedAtGitHub') as string)).toISOString(),
         })
-    } catch (error) {
-        console.error('Failed to delete repository:', error);
-        throw new Error('Failed to delete repository.');
-    } finally {
-        await prisma.$disconnect();
+
+        const existingRepo = await prisma.userSelectedRepository.findFirst({
+            where: {
+                userId: session?.user?.id,
+                githubRepoId: repository.githubRepoId,
+            },
+        });
+
+        if (existingRepo) {
+            return { success: false, message: 'Repository already selected by this user.' };
+        }
+
+        await prisma.userSelectedRepository.create({
+            data: {
+                userId: session!.user.id,
+                ...repository,
+            },
+        })
+
         revalidatePath('/dashboard/repositories');
-        redirect('/dashboard/repositories');
+        return { success: true, message: 'Repository added successfully!' };
+    } catch (error: any) {
+        console.error('Failed to add selected repository:', error);
+        return { error: `Failed to add repository. ${error.message || 'Please try again.'}` };
+    }
+}
+
+export async function getRepositoryById(id: string): Promise<CustomResponse<UserSelectedRepository>> {
+    try {
+        const respository = await prisma.userSelectedRepository.findUnique({
+            where: {
+                id,
+            },
+        });
+
+        return { success: true, data: respository };
+    } catch (error: any) {
+        console.error('Failed to get selected repository:', error);
+        return { error: `Failed to get repository. ${error.message || 'Please try again.'}` };
+    }
+}
+
+const UpdateScheme = FormSchema.omit({ githubRepoId: true })
+
+export async function updateRepository(id: string, formData: FormData): Promise<CustomResponse> {
+    try {
+        const repository = UpdateScheme.parse({
+            name: formData.get('name'),
+            fullName: formData.get('fullName'),
+            description: formData.get('description'),
+            htmlUrl: formData.get('htmlUrl'),
+            private: formData.get('private') === 'true' ? true : false,
+            language: formData.get('language'),
+            stargazersCount: formData.get('stargazersCount'),
+            forksCount: formData.get('forksCount'),
+            updatedAtGitHub: new Date((formData.get('updatedAtGitHub') as string)).toISOString(),
+        });
+
+        const existingRepo = await prisma.userSelectedRepository.findFirst({
+            where: {
+                id,
+            },
+        });
+
+        if (!existingRepo) {
+            return { success: false, message: 'Repository with this id is not exist.' };
+        }
+
+        await prisma.userSelectedRepository.update({
+            where: {
+                id,
+            },
+            data: {
+                ...repository,
+            },
+        });
+
+        revalidatePath('/dashboard/repositories');
+        return { success: true, message: 'Repository updated successfully!' };
+    } catch (error: any) {
+        console.error('Failed to update selected repository:', error);
+        return { error: `Failed to update repository. ${error.message || 'Please try again.'}` };
+    }
+}
+
+export async function deleteRepository(id: string): Promise<CustomResponse> {
+    try {
+        const result = await deleteImageByRepository(id);
+        if (!result.success) {
+            return result;
+        }
+        
+        await prisma.userSelectedRepository.delete({
+            where: {
+                id,
+            },
+        });
+
+        revalidatePath('/dashboard/repositories');
+        return { success: true, message: 'Repository deleted successfully!' };
+    } catch (error: any) {
+        console.error('Failed to delete selected repository:', error);
+        return { error: `Failed to delete repository. ${error.message || 'Please try again.'}` };
     }
 }

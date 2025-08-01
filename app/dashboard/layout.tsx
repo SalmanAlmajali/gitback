@@ -46,7 +46,7 @@ export const Breadcrumbs = ({
     breadcrumbs: Breadcrumb[];
 }) => (
     <nav aria-label="Breadcrumb" className="mb-6 block">
-        <ol className={clsx(figtree.className, 'flex text-xl md:text-2xl font-extrabold tracking-tight text-balance')}>
+        <ol className={clsx(figtree.className, 'flex text-lg md:text-2xl font-extrabold tracking-tight')}>
             {breadcrumbs.map((breadcrumb, index) => (
                 <li
                     key={breadcrumb.href}

@@ -1,115 +1,141 @@
-import { UserField } from '@/app/lib/users/definitions';
-import { IconBookmarks, IconBrandGit, IconBrandGithub, IconUserCircle } from '@tabler/icons-react';
-import { Button } from '../button';
-import Link from 'next/link';
-import { createRepository } from '@/app/lib/repositories/actions';
+'use client';
 
-export default function CreateForm({
-    users,
-}: {
-    users: UserField[];
-}) {
+import React, { useState } from 'react'
+import MyInput from '../my-input'
+import { IconDeviceFloppy, IconGitBranch, IconLoader2 } from '@tabler/icons-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
+import { Button } from '../button';
+import LinkButton from '../link-button';
+import { addSelectedRepository } from '@/app/lib/repositories/actions';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { figtree } from '@/components/fonts';
+import { getARepository } from '@/app/lib/github/api';
+import { useSession } from 'next-auth/react';
+
+function CreateForm() {
+    const session = useSession();
+
+    const router = useRouter();
+
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+
+        setLoading(true);
+
+        const form = e.target;
+        const formData = new FormData(form);
+
+        const [name, fullName] = [formData.get('name')?.toString(), formData.get('fullName')?.toString()];
+
+        const repository = await getRepository(name, fullName);
+
+        if (repository.success && repository.data) {
+            const formData = new FormData();
+            formData.append("githubRepoId", repository.data.id.toString());
+            formData.append("name", repository.data.name);
+            formData.append("fullName", repository.data.full_name);
+            formData.append("description", repository.data.description ?? '');
+            formData.append("htmlUrl", repository.data.html_url);
+            formData.append("private", repository.data.private ? 'true' : 'false');
+            formData.append("language", repository.data.language ?? '');
+            formData.append("stargazersCount", repository.data.stargazers_count.toString());
+            formData.append("forksCount", repository.data.forks_count.toString());
+            formData.append("updatedAtGitHub", repository.data.updated_at);
+
+            const result = await addSelectedRepository(formData);
+
+            if (result?.success) {
+                toast.success('Success', {
+                    description: result?.message
+                });
+                router.push('/dashboard/repositories');
+            } else {
+                toast.error("Error", {
+                    description: result?.error || result?.message,
+                });
+            }
+        }
+
+        setLoading(false);
+    }
+
+    const getRepository = async (name: string | undefined, fullName: string | undefined) => {
+        if (name !== undefined && fullName !== undefined) {
+            const owner = fullName.split('/', 1)[0];
+            const result = await getARepository(session.data?.accessToken, owner, name)
+
+            if (result.success && result.data) {
+                return { success: true, data: result.data };
+            } else {
+                toast.error("Error", {
+                    description: result.error
+                })
+            }
+        }
+
+        return { success: false };
+    }
 
     return (
-        <form
-            action={async (formData: FormData) => {
-                'use server';
-                await createRepository(formData);
-            }}
-            className="my-8"
-        >
-            <div className="rounded-md bg-neutral-100 dark:bg-neutral-900 p-4 md:p-6">
-                {/* User Name */}
-                <div className="mb-4">
-                    <label htmlFor="user_id" className="mb-2 block text-sm font-medium">
-                        Choose user
-                    </label>
-                    <div className="relative">
-                        <select
-                            id="user_id"
-                            name="user_id"
-                            className="peer block w-full cursor-pointer rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+        <Card className='w-full h-fit sticky top-7'>
+            <CardHeader>
+                <CardTitle className={`${figtree.className} text-2xl font-bold leading-tight`}>Create Repository Manually</CardTitle>
+                <CardDescription>If U are logged in using GitHub account or already linked your account, consider importing your repository directly from GitHub. It&apos;s so much easier.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit} encType='multipart/form-data'>
+                    <div className="mb-4">
+                        <label htmlFor="name" className="mb-2 block text-sm font-medium">
+                            GitHub Repository Name
+                        </label>
+                        <MyInput
+                            name={'name'}
+                            type={'text'}
+                            placeholder={"Enter your GitHub repository name"}
+                            icon={<IconGitBranch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="fullName" className="mb-2 block text-sm font-medium">
+                            GitHub Repository Full Name
+                        </label>
+                        <MyInput
+                            name={'fullName'}
+                            type={'text'}
+                            placeholder={"GitHub repository full name (ownername/repo_name)"}
+                            icon={<IconGitBranch className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
+                            required
+                        />
+                    </div>
+                    <div className='flex flex-col-reverse md:flex-row md:justify-end gap-2'>
+                        <LinkButton
+                            href="/dashboard/repositories"
+                            className='px-4 py-2 rounded-lg'
+                            variant='secondary'
                         >
-                            <option value="" className='text-black'>
-                                Select a user
-                            </option>
-                            {users.map((user) => (
-                                <option key={user.id} value={user.id} className='text-black'>
-                                    {user.name}
-                                </option>
-                            ))}
-                        </select>
-                        <IconUserCircle className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+                            Cancel
+                        </LinkButton>
+                        <Button type='submit' disabled={loading}>
+                            {loading ? (
+                                <>
+                                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...
+                                </>
+                            ) : (
+                                <>
+                                    <IconDeviceFloppy />
+                                    Add Repository
+                                </>
+                            )}
+                        </Button>
                     </div>
-                </div>
-
-                {/* Name */}
-                <div className="mb-4">
-                    <label htmlFor="name" className="mb-2 block text-sm font-medium">
-                        Enter repository name
-                    </label>
-                    <div className="relative mt-2 rounded-md">
-                        <div className="relative">
-                            <input
-                                id="name"
-                                name="name"
-                                type="text"
-                                placeholder="Enter repository name"
-                                className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                            />
-                            <IconBookmarks className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Github Owner */}
-                <div className="mb-4">
-                    <label htmlFor="github_owner" className="mb-2 block text-sm font-medium">
-                        Github owner
-                    </label>
-                    <div className="relative mt-2 rounded-md">
-                        <div className="relative">
-                            <input
-                                id="github_owner"
-                                name="github_owner"
-                                type="text"
-                                placeholder="Enter github owner"
-                                className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                            />
-                            <IconBrandGithub className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Github Repo */}
-                <div className="mb-4">
-                    <label htmlFor="github_repo" className="mb-2 block text-sm font-medium">
-                        Github repository
-                    </label>
-                    <div className="relative mt-2 rounded-md">
-                        <div className="relative">
-                            <input
-                                id="github_repo"
-                                name="github_repo"
-                                type="text"
-                                placeholder="Enter github repository"
-                                className="peer block w-full rounded-md border py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                            />
-                            <IconBrandGit className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div className="mt-6 flex justify-between md:justify-end gap-4">
-                <Link
-                    className="flex items-center rounded-lg bg-gray-100 dark:bg-gray-900 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 transition-colors hover:bg-gray-200 dark:hover:bg-gray-800"
-                    href={'/dashboard/repositories'}
-                >
-                    Cancel
-                </Link>
-                <Button type="submit">Create Repository</Button>
-            </div>
-        </form >
-    );
+                </form>
+            </CardContent>
+        </Card>
+    )
 }
+
+export default CreateForm
