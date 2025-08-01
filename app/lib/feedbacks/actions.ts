@@ -3,11 +3,16 @@
 import { auth } from "@/auth";
 import { checkForSession } from "../utils";
 import { prisma } from "../prisma";
-import { Feedback, FeedbackStatus, FeedbackType } from "@prisma/client";
+import { FeedbackImage, FeedbackStatus, FeedbackType } from "@prisma/client";
 import { CustomResponse } from "../definitions";
 import { revalidatePath } from "next/cache";
 import z from "zod";
-import { FeedbacksTableRow } from "./definitions";
+import { FeedbacksTableRow, FeedbackWithImages } from "./definitions";
+import path from "path";
+import { randomUUID } from "crypto";
+import fs from 'fs/promises';
+import pLimit from 'p-limit';
+import sharp from "sharp";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -34,12 +39,12 @@ const type = (formData: FormData) => {
 
 const status = (formData: FormData) => {
     switch (formData.get('status')) {
-        case 'PENDING':
-            return FeedbackStatus.PENDING;
+        case 'REJECTED':
+            return FeedbackStatus.REJECTED;
         case 'SUBMITTED':
             return FeedbackStatus.SUBMITTED;
         default:
-            return FeedbackStatus.REJECTED;
+            return FeedbackStatus.PENDING;
     }
 };
 
@@ -47,7 +52,7 @@ export async function getFeedbacks(
     query: string,
     currentPage: number,
 ): Promise<{
-    data?: FeedbacksTableRow[]; totalCount?: number, error?: string
+    data?: FeedbacksTableRow[]; totalCount?: number, totalPages?: number, success?: boolean, error?: string
 }> {
     const session = await auth();
 
@@ -82,12 +87,12 @@ export async function getFeedbacks(
             ];
         }
 
-        // Get total count
+
         const totalCount = await prisma.feedback.count({
             where: whereClause,
         });
 
-        // Get paginated feedbacks
+
         const feedbacks = await prisma.feedback.findMany({
             where: whereClause,
             orderBy: {
@@ -100,10 +105,15 @@ export async function getFeedbacks(
             },
         });
 
-        return { data: feedbacks, totalCount: totalCount };
+        return {
+            success: true,
+            data: feedbacks,
+            totalCount: totalCount,
+            totalPages: Math.ceil(Number(totalCount) / ITEMS_PER_PAGE),
+        };
     } catch (error) {
         console.error('Failed to read user selected feedbacks from DB:', error);
-        return { error: 'Failed to retrieve selected feedbacks. Please try again.' };
+        return { success: false, error: 'Failed to retrieve selected feedbacks. Please try again.' };
     }
 }
 
@@ -119,32 +129,49 @@ export async function createFeedback(formData: FormData): Promise<CustomResponse
             status: status(formData),
         });
 
-        await prisma.feedback.create({
+        const result = await prisma.feedback.create({
             data: {
                 ...feedback,
             },
         });
 
+        const images = formData.getAll('images') as File[];
+
+        console.log(images);
+
+        if (images[0].size !== 0) {
+            const saveImageResult = await saveImages(images, result.id);
+
+            if (!saveImageResult.success) {
+                return saveImageResult;
+            }
+        }
+
+
         revalidatePath('/dashboard/feedbacks');
         return { success: true, message: 'Feedback added successfully!' };
     } catch (error: any) {
         console.error('Failed to create feedback:', error);
-        return { error: `Failed to create feedback. ${error.message || 'Please try again.'}` };
+        return { success: false, error: `Failed to create feedback. ${error.message || 'Please try again.'}` };
     }
 }
 
-export async function getFeedbackId(id: string): Promise<CustomResponse<Feedback>> {
+export async function getFeedbackId(id: string): Promise<CustomResponse<FeedbackWithImages>> {
     try {
         const feedback = await prisma.feedback.findUnique({
             where: {
                 id,
             },
+            include: {
+                images: true,
+                repository: true,
+            }
         });
 
         return { success: true, data: feedback };
     } catch (error: any) {
         console.error('Failed to get selected feedback:', error);
-        return { error: `Failed to get feedback. ${error.message || 'Please try again.'}` };
+        return { success: false, error: `Failed to get feedback. ${error.message || 'Please try again.'}` };
     }
 }
 
@@ -170,6 +197,18 @@ export async function updateFeedback(id: string, formData: FormData): Promise<Cu
             return { success: false, message: 'Feedback with this id is not exist.' };
         }
 
+        const images = formData.getAll('images') as File[];
+
+        console.log(images);
+
+        if (images[0].size !== 0) {
+            const saveImageResult = await saveImages(images, id);
+
+            if (!saveImageResult.success) {
+                return saveImageResult;
+            }
+        }
+
         await prisma.feedback.update({
             where: {
                 id,
@@ -183,12 +222,55 @@ export async function updateFeedback(id: string, formData: FormData): Promise<Cu
         return { success: true, message: 'Feedback updated successfully!' };
     } catch (error: any) {
         console.error('Failed to update selected Feedback:', error);
-        return { error: `Failed to update Feedback. ${error.message || 'Please try again.'}` };
+        return { success: false, error: `Failed to update Feedback. ${error.message || 'Please try again.'}` };
+    }
+}
+
+export async function updateAfterSubmit(id: string, formData: FormData): Promise<CustomResponse> {
+    try {
+        const existingFeedback = await prisma.feedback.findFirst({
+            where: {
+                id,
+            },
+        });
+
+        if (!existingFeedback) {
+            return { success: false, message: 'Feedback with this id is not exist.' };
+        }
+
+        const gitHubIssue = formData.get('gitHubIssue') as string;
+
+        await prisma.feedback.update({
+            where: {
+                id,
+            },
+            data: {
+                status: FeedbackStatus.SUBMITTED,
+                gitHubIssue, 
+            },
+        });
+
+        revalidatePath('/dashboard/feedbacks');
+        return { success: true, message: 'Feedback updated successfully!' };
+    } catch (error: any) {
+        console.error('Failed to update selected Feedback:', error);
+        return { success: false, error: `Failed to update Feedback. ${error.message || 'Please try again.'}` };
     }
 }
 
 export async function deleteFeedback(id: string): Promise<CustomResponse> {
     try {
+        const images = await prisma.feedbackImage.findMany({
+            where: { feedbackId: id },
+        });
+
+        for (const image of images) {
+            const result = await deleteImage(image);
+            if (!result.success) {
+                return result;
+            }
+        }
+
         await prisma.feedback.delete({
             where: {
                 id,
@@ -199,6 +281,142 @@ export async function deleteFeedback(id: string): Promise<CustomResponse> {
         return { success: true, message: 'Repository deleted successfully!' };
     } catch (error: any) {
         console.error('Failed to delete selected repository:', error);
-        return { error: `Failed to delete repository. ${error.message || 'Please try again.'}` };
+        return { success: false, error: `Failed to delete repository. ${error.message || 'Please try again.'}` };
+    }
+}
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const CONCURRENCY = 3;
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_TOTAL_SIZE = 20 * 1024 * 1024;
+
+export async function saveImages(images: File[], feedbackId: string): Promise<CustomResponse> {
+    try {
+        if (images.length > MAX_FILES + 1) {
+            return { success: false, error: `Too many files. Max is ${MAX_FILES}.` };
+        }
+
+        validateTotalSize(images);
+
+        if (images.some(image => !(image instanceof File))) {
+            return { success: false, error: 'Invalid files. Please try again.' };
+        }
+
+        for (const image of images) {
+            if (!ALLOWED_TYPES.includes(image.type)) {
+                return { success: false, error: 'Unsupported image type: ' + image.name };
+            }
+        }
+
+        const limit = pLimit(CONCURRENCY);
+
+        const perImageResults = await Promise.all(
+            images.map(image =>
+                limit(async () => {
+                    const arrayBuf = await image.arrayBuffer();
+                    let buffer: any = Buffer.from(new Uint8Array(arrayBuf));
+
+                    if (buffer.byteLength > 1_000_000) {
+                        buffer = await sharp(buffer)
+                            .resize({ width: 1200, withoutEnlargement: true })
+                            .webp({ quality: 80 })
+                            .toBuffer();
+                    }
+
+                    const ext = path.extname(image.name) || '.jpg';
+                    const fileName = `${randomUUID()}${ext}`;
+                    const uploadPath = path.join(process.cwd(), 'public', 'uploads', fileName);
+
+                    await fs.writeFile(uploadPath, buffer);
+
+                    return {
+                        feedbackId,
+                        url: `/uploads/${fileName}`,
+                    };
+                })
+            )
+        );
+
+        if (perImageResults.length > 0) {
+            await prisma.feedbackImage.createMany({
+                data: perImageResults,
+            });
+        }
+
+        return { success: true, message: 'Images saved successfully!' };
+    } catch (error: any) {
+        console.error('Failed to save images:', error);
+        return { success: false, error: `Failed to save images. ${error.message || 'Please try again.'}` };
+    }
+}
+
+export async function deleteImage(feedbackImage: FeedbackImage): Promise<CustomResponse> {
+    try {
+        const imagePath = path.join('public', feedbackImage.url.replace(/^\/+/, ''));
+
+        try {
+            await fs.unlink(imagePath);
+        } catch (error: any) {
+            if (error.code !== 'ENOENT') {
+                throw error;
+            }
+        }
+
+        await prisma.feedbackImage.delete({
+            where: {
+                id: feedbackImage.id,
+            },
+        });
+
+        return { success: true, message: 'Image deleted successfully!' };
+    } catch (error: any) {
+        console.error('Failed to delete image:', error);
+        return { success: false, error: `Failed to delete image. ${error.message || 'Please try again.'}` };
+    }
+}
+
+export async function deleteImageByRepository(repositoryId: string): Promise<CustomResponse> {
+    try {
+        const feedbackImages = await prisma.feedbackImage.findMany({
+            where: {
+                feedback: {
+                    repositoryId: repositoryId,
+                },
+            },
+        });
+
+        for (const image of feedbackImages) {
+            try {
+                const imagePath = path.join('public', image.url.replace(/^\/+/, ''));
+                await fs.unlink(imagePath);
+            } catch (error: any) {
+                if (error.code !== 'ENOENT') {
+                    throw error;
+                }
+            }
+        }
+
+        return { success: true, message: 'Images deleted successfully.' };
+    } catch (error: any) {
+        console.error('Failed to delete images:', error);
+        return { success: false, error: `Failed to delete images. ${error.message || 'Please try again.'}` };
+    }
+}
+
+function validateTotalSize(files: File[]) {
+    let totalSize = 0;
+    for (const file of files) {
+        if (!(file instanceof File)) {
+            return { success: false, error: 'Invalid file upload.' };
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            return { success: false, error: `File "${file.name}" is too large. Max per file is 5MB.` };
+        }
+        totalSize += file.size;
+    }
+
+    if (totalSize > MAX_TOTAL_SIZE) {
+        return { success: false, error: `Total upload size too big. Max combined is ${Math.round(MAX_TOTAL_SIZE / 1024 / 1024)}MB.` }
     }
 }

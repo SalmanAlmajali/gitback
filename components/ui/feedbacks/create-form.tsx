@@ -4,7 +4,7 @@ import { UserSelectedRepository } from '@prisma/client'
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card';
 import { figtree } from '@/components/fonts';
-import { IconAdjustmentsStar, IconAppsFilled, IconBookmarks, IconBugFilled, IconCancel, IconClockFilled, IconDeviceFloppy, IconHeading, IconLoader2, IconMail, IconSquareCheckFilled, IconTextCaption, IconUser } from '@tabler/icons-react';
+import { IconAdjustmentsStar, IconAppsFilled, IconBookmarks, IconBugFilled, IconCancel, IconClockFilled, IconDeviceFloppy, IconFileUpload, IconHeading, IconLoader2, IconMail, IconTextCaption, IconUser } from '@tabler/icons-react';
 import MyInput, { MyTextArea } from '../my-input';
 import { createFeedback } from '@/app/lib/feedbacks/actions';
 import { toast } from 'sonner';
@@ -167,27 +167,13 @@ function CreateForm({
                                             type="radio"
                                             value="PENDING"
                                             className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
+                                            defaultChecked={true}
                                         />
                                         <label
                                             htmlFor="pending"
                                             className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-500 px-3 py-1.5 text-xs font-medium text-white"
                                         >
                                             Pending <IconClockFilled className="h-4 w-4" />
-                                        </label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input
-                                            id="submitted"
-                                            name="status"
-                                            type="radio"
-                                            value="SUBMITTED"
-                                            className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                                        />
-                                        <label
-                                            htmlFor="submitted"
-                                            className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
-                                        >
-                                            Submitted <IconSquareCheckFilled className="h-4 w-4" />
                                         </label>
                                     </div>
                                     <div className="flex items-center">
@@ -228,7 +214,19 @@ function CreateForm({
                             <MyTextArea
                                 name={'content'}
                                 icon={<IconTextCaption className="pointer-events-none absolute left-3 top-10 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
-                                rows={15}
+                                rows={10}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="images" className="mb-2 block text-sm font-medium">
+                                Images
+                            </label>
+                            <MyInput
+                                name={'images'}
+                                type={'file'}
+                                icon={<IconFileUpload className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />}
+                                accept='image/*'
+                                multiple
                             />
                         </div>
                         <div className='flex justify-end gap-x-2'>

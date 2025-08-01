@@ -1,7 +1,7 @@
-import { LoginForm } from "@/components/ui/login/login-form"
 import LetterGlitch from "@/components/blocks/Backgrounds/LetterGlitch/LetterGlitch"
 import { Metadata } from "next"
 import { Toaster } from "@/components/ui/sonner"
+import SignInForm from "@/components/ui/sign-in/sign-in-form"
 
 export const metadata: Metadata = {
     title: 'Login'
@@ -19,7 +19,7 @@ export default function Page() {
             />
             <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
                 <div className="w-full max-w-sm">
-                    <LoginForm />
+                    <SignInForm />
                     <Toaster />
                 </div>
             </div>

@@ -10,7 +10,7 @@ function LinkButton({
 } : {
     href: string,
     className: string,
-    variant?: string | undefined,
+    variant?: 'default' | 'secondary',
     children: ReactNode
 }) {
     return (

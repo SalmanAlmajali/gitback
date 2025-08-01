@@ -2,12 +2,12 @@ import clsx from 'clsx';
 import React from 'react'
 
 interface MyInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     isHidden?: boolean | undefined;
 }
 
 interface MyTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
 }
 
 const MyInput: React.FC<MyInputProps> = ({ name, type, placeholder, icon, isHidden, ...props }: MyInputProps) => {
