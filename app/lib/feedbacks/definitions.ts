@@ -4,4 +4,4 @@ export type FeedbacksTableRow = Feedback & {
     repository: UserSelectedRepository;
 };
 
-export type FeedbackWithImages = Feedback & { images: FeedbackImage[] };
+export type FeedbackWithImages = Feedback & { images: FeedbackImage[] } & { repository: UserSelectedRepository };
