@@ -106,10 +106,10 @@ function CreateForm() {
                             required
                         />
                     </div>
-                    <div className='flex justify-end gap-x-2'>
+                    <div className='flex flex-col-reverse md:flex-row md:justify-end gap-2'>
                         <LinkButton
                             href="/dashboard/repositories"
-                            className='px-4 rounded-lg'
+                            className='px-4 py-2 rounded-lg'
                             variant='secondary'
                         >
                             Cancel
