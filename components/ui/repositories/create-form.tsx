@@ -20,8 +20,13 @@ function CreateForm() {
 
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (formData: FormData) => {
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+
         setLoading(true);
+
+        const form = e.target;
+        const formData = new FormData(form);
 
         const [name, fullName] = [formData.get('name')?.toString(), formData.get('fullName')?.toString()];
 
@@ -81,7 +86,7 @@ function CreateForm() {
                 <CardDescription>If U are logged in using GitHub account or already linked your account, consider importing your repository directly from GitHub. It&apos;s so much easier.</CardDescription>
             </CardHeader>
             <CardContent>
-                <form action={handleSubmit}>
+                <form onSubmit={handleSubmit} encType='multipart/form-data'>
                     <div className="mb-4">
                         <label htmlFor="name" className="mb-2 block text-sm font-medium">
                             GitHub Repository Name

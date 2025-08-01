@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ca
 import { figtree } from '@/components/fonts';
 import { IconAdjustmentsStar, IconAppsFilled, IconBookmarks, IconBugFilled, IconCancel, IconClockFilled, IconDeviceFloppy, IconFileUpload, IconHeading, IconLoader2, IconMail, IconTextCaption, IconTrash, IconUser } from '@tabler/icons-react';
 import MyInput, { MyTextArea } from '../my-input';
-import { deleteImage, updateFeedback } from '@/app/lib/feedbacks/actions';
+import { updateFeedback } from '@/app/lib/feedbacks/actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import LinkButton from '../link-button';
@@ -14,6 +14,7 @@ import { Button } from '../button';
 import { FeedbackWithImages } from '@/app/lib/feedbacks/definitions';
 import Image from 'next/image';
 import clsx from 'clsx';
+import { deleteImage } from '@/app/lib/feedback-images/actions';
 
 function EditForm({
     feedback,
@@ -27,8 +28,13 @@ function EditForm({
     const [idToDelete, setIdToDelete] = useState('');
     const [images, setImages] = useState<FeedbackImage[]>([]);
 
-    const updateFeedbackWithId = async (formData: FormData) => {
+    const updateFeedbackWithId = async (e: any) => {
+        e.preventDefault();
+        
         setLoading(true)
+
+        const form = e.target;
+        const formData = new FormData(form);
 
         const result = await updateFeedback(feedback.id, formData)
 
@@ -79,7 +85,7 @@ function EditForm({
                 <CardDescription>Lorem ipsum dolor sit amet</CardDescription>
             </CardHeader>
             <CardContent>
-                <form action={updateFeedbackWithId}>
+                <form onSubmit={updateFeedbackWithId} encType='multipart/form-data'>
                     <div className='grid grid-rows-2 grid-cols-1 md:grid-rows-1 md:grid-cols-2 gap-4'>
 
                         <div>

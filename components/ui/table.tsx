@@ -6,6 +6,7 @@ import { CustomResponse, RenderCellFunction, TableHeadColumn } from '@/app/lib/d
 import clsx from 'clsx';
 import LinkButton from './link-button';
 import Pagination from './repositories/pagination';
+import DeleteButton from './delete-button';
 
 type FetchResponse<T> = {
     data?: T[];
@@ -42,9 +43,7 @@ export default async function Table<T extends { id: string }>({
                 
                 await deleteAction(id)
             }}>
-                <button type="submit" className="rounded-md border p-2 bg-red-600 hover:bg-red-700 transition-colors cursor-pointer">
-                    <IconTrash className="w-5" />
-                </button>
+                <DeleteButton />
             </form>
         )
     }
