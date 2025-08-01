@@ -118,10 +118,11 @@ model Feedback {
   repositoryId String
   repository   UserSelectedRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
 
-  title   String
-  content String         @db.Text
-  type    FeedbackType
-  status  FeedbackStatus
+  title       String
+  content     String         @db.Text
+  type        FeedbackType
+  status      FeedbackStatus
+  gitHubIssue String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
