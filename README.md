@@ -1,3 +1,14 @@
+# Link Tugas JIDA berdasarkan branch dan repositori
+
+1. Tugas Pertemuan Pertama = [https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-1.git](https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-1)].
+2. Tugas Pertemuan Kedua = [https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-2](https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-2).
+3. Tugas Pertemuan Keempat = [https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-3](https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-3).
+4. Tugas Pertemuan Kelima = [https://github.com/SalmanAlmajali/gitback/tree/jida-tugas-4](https://github.com/SalmanAlmajali/gitback/tree/jida-tugas-4).
+5. Tugas Pertemuan Keenam = [https://github.com/SalmanAlmajali/my-next-redux-app.git](https://github.com/SalmanAlmajali/my-next-redux-app.git).
+6. Tugas Pertemuan Kedelapan = [https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-6](https://github.com/SalmanAlmajali/gitback/tree/tugas-jida-6)
+
+
+
 # Gitback – Alur Penggunaan Aplikasi
 
 Gitback adalah aplikasi untuk mengelola *feedback* dari pengguna terhadap repository GitHub. Feedback dapat diubah menjadi GitHub Issue, serta diperkaya menggunakan AI agar lebih mudah dipahami developer.
