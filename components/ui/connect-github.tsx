@@ -17,7 +17,7 @@ function ConnectGitHub() {
     return (
         <Button
             variant="default"
-            className="w-full"
+            className="w-full md:w-fit"
             type="button"
             onClick={handleSignWithGitHub}
         >

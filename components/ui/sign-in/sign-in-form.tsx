@@ -28,9 +28,11 @@ export default function SignInForm({
     );
 
     useEffect(() => {
-        toast.error("Error", {
-            description: errorMessage
-        });
+        if (errorMessage) {
+            toast.error("Error", {
+                description: errorMessage
+            });
+        }
     }, [errorMessage]);
 
     const handleSignWithGitHub = async () => {
@@ -118,7 +120,7 @@ export default function SignInForm({
                         onClick={handleSignWithGitHub}
                         disabled={loading}
                     >
-                        {isPending ? (
+                        {loading ? (
                             <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

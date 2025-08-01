@@ -56,13 +56,6 @@ export const authConfig: NextAuthConfig = {
                         return null;
                     }
 
-                    const githubAccount = await prisma.account.findFirst({
-                        where: {
-                            userId: user.id,
-                            provider: 'github',
-                        },
-                    });
-
 
                     // Return the user object if authentication is successful
                     return {
@@ -70,7 +63,6 @@ export const authConfig: NextAuthConfig = {
                         name: user.name,
                         email: user.email,
                         image: user.image,
-                        accessToken: githubAccount?.access_token ?? null,
                     };
                 }
 
@@ -79,7 +71,7 @@ export const authConfig: NextAuthConfig = {
         }),
     ],
     pages: {
-        signIn: '/auth/login', // Custom sign-in page
+        signIn: '/auth/sign-in',
     },
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
@@ -94,10 +86,20 @@ export const authConfig: NextAuthConfig = {
             }
             return true;
         },
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
-                token.accessToken = account?.access_token ?? undefined;
+            }
+
+            if (!token.accessToken) {
+                const githubAccount = await prisma.account.findFirst({
+                    where: {
+                        userId: user.id,
+                        provider: 'github',
+                    },
+                });
+
+                token.accessToken = githubAccount?.access_token ?? undefined;
             }
 
             return token;

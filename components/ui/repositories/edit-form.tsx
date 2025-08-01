@@ -28,11 +28,16 @@ export default function EditForm({
         update: false,
     });
 
-    const updateRepositoryWithId = async (formData: FormData) => {
-        setLoading(prevState => ({
-            ...prevState,
-            update: true,
-        }))
+    const setLoadingFlag = (key: keyof typeof loading, value: boolean) =>
+        setLoading(prev => ({ ...prev, [key]: value }));
+
+    const updateRepositoryWithId = async (e: any) => {
+        e.preventDefault();
+
+        setLoadingFlag('update', true)
+
+        const form = e.target;
+        const formData = new FormData(form);
 
         const result = await updateRepository(repository.id, formData)
 
@@ -40,7 +45,7 @@ export default function EditForm({
             toast.success('Success', {
                 description: result?.message
             });
-            setLoading(prev => ({ ...prev, update: false }));
+            setLoadingFlag('update', false);
             router.push('/dashboard/repositories');
         } else {
             toast.error("Error", {
@@ -48,20 +53,14 @@ export default function EditForm({
             });
 
 
-            setLoading(prevState => ({
-                ...prevState,
-                update: false,
-            }))
+            setLoadingFlag('update', false)
         }
     }
 
     const handleSync = async (e: any) => {
         e.preventDefault();
 
-        setLoading(prevState => ({
-            ...prevState,
-            sync: true,
-        }))
+        setLoadingFlag('sync', true)
 
         const owner = repository.fullName.split('/', 1)[0];
         const result = await getARepository(session.data?.accessToken, owner, repository.name)
@@ -85,7 +84,7 @@ export default function EditForm({
                 toast.success('Success', {
                     description: updateResult?.message
                 });
-                setLoading(prev => ({ ...prev, sync: false }));
+                setLoadingFlag('sync', false)
                 router.push('/dashboard/repositories');
             } else {
                 toast.error("Error", {
@@ -97,10 +96,7 @@ export default function EditForm({
                 description: result.error
             })
 
-            setLoading(prevState => ({
-                ...prevState,
-                sync: false,
-            }))
+            setLoadingFlag('sync', false)
         }
     }
 
@@ -111,7 +107,7 @@ export default function EditForm({
                 <CardDescription>If U are logged in using GitHub account or already linked your account, U can automaticaly sync your repository directly from GitHub or edit manually.</CardDescription>
             </CardHeader>
             <CardContent>
-                <form action={updateRepositoryWithId}>
+                <form onSubmit={updateRepositoryWithId} encType='multipart/form-data'>
                     <div className="mb-4">
                         <label htmlFor="name" className="mb-2 block text-sm font-medium">
                             GitHub Repository Name
@@ -253,7 +249,7 @@ export default function EditForm({
                             defaultValue={repository.updatedAt.toISOString().split('Z', 1)[0]}
                         />
                     </div>
-                    <div className='flex flex-col-reverse justify-between w-full mt-4 gap-2'>
+                    <div className='flex flex-col-reverse md:flex-row-reverse justify-between w-full mt-4 gap-2'>
                         <div className='flex flex-col-reverse md:flex-row md:justify-end gap-2'>
                             <LinkButton
                                 href="/dashboard/repositories"

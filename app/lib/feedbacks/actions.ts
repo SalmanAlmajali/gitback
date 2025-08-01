@@ -3,16 +3,12 @@
 import { auth } from "@/auth";
 import { checkForSession } from "../utils";
 import { prisma } from "../prisma";
-import { FeedbackImage, FeedbackStatus, FeedbackType } from "@prisma/client";
+import { FeedbackStatus, FeedbackType } from "@prisma/client";
 import { CustomResponse } from "../definitions";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 import { FeedbacksTableRow, FeedbackWithImages } from "./definitions";
-import path from "path";
-import { randomUUID } from "crypto";
-import fs from 'fs/promises';
-import pLimit from 'p-limit';
-import sharp from "sharp";
+import { deleteImage, saveImages } from "../feedback-images/actions";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -282,141 +278,5 @@ export async function deleteFeedback(id: string): Promise<CustomResponse> {
     } catch (error: any) {
         console.error('Failed to delete selected repository:', error);
         return { success: false, error: `Failed to delete repository. ${error.message || 'Please try again.'}` };
-    }
-}
-
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const CONCURRENCY = 3;
-const MAX_FILES = 5;
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const MAX_TOTAL_SIZE = 20 * 1024 * 1024;
-
-export async function saveImages(images: File[], feedbackId: string): Promise<CustomResponse> {
-    try {
-        if (images.length > MAX_FILES + 1) {
-            return { success: false, error: `Too many files. Max is ${MAX_FILES}.` };
-        }
-
-        validateTotalSize(images);
-
-        if (images.some(image => !(image instanceof File))) {
-            return { success: false, error: 'Invalid files. Please try again.' };
-        }
-
-        for (const image of images) {
-            if (!ALLOWED_TYPES.includes(image.type)) {
-                return { success: false, error: 'Unsupported image type: ' + image.name };
-            }
-        }
-
-        const limit = pLimit(CONCURRENCY);
-
-        const perImageResults = await Promise.all(
-            images.map(image =>
-                limit(async () => {
-                    const arrayBuf = await image.arrayBuffer();
-                    let buffer: any = Buffer.from(new Uint8Array(arrayBuf));
-
-                    if (buffer.byteLength > 1_000_000) {
-                        buffer = await sharp(buffer)
-                            .resize({ width: 1200, withoutEnlargement: true })
-                            .webp({ quality: 80 })
-                            .toBuffer();
-                    }
-
-                    const ext = path.extname(image.name) || '.jpg';
-                    const fileName = `${randomUUID()}${ext}`;
-                    const uploadPath = path.join(process.cwd(), 'public', 'uploads', fileName);
-
-                    await fs.writeFile(uploadPath, buffer);
-
-                    return {
-                        feedbackId,
-                        url: `/uploads/${fileName}`,
-                    };
-                })
-            )
-        );
-
-        if (perImageResults.length > 0) {
-            await prisma.feedbackImage.createMany({
-                data: perImageResults,
-            });
-        }
-
-        return { success: true, message: 'Images saved successfully!' };
-    } catch (error: any) {
-        console.error('Failed to save images:', error);
-        return { success: false, error: `Failed to save images. ${error.message || 'Please try again.'}` };
-    }
-}
-
-export async function deleteImage(feedbackImage: FeedbackImage): Promise<CustomResponse> {
-    try {
-        const imagePath = path.join('public', feedbackImage.url.replace(/^\/+/, ''));
-
-        try {
-            await fs.unlink(imagePath);
-        } catch (error: any) {
-            if (error.code !== 'ENOENT') {
-                throw error;
-            }
-        }
-
-        await prisma.feedbackImage.delete({
-            where: {
-                id: feedbackImage.id,
-            },
-        });
-
-        return { success: true, message: 'Image deleted successfully!' };
-    } catch (error: any) {
-        console.error('Failed to delete image:', error);
-        return { success: false, error: `Failed to delete image. ${error.message || 'Please try again.'}` };
-    }
-}
-
-export async function deleteImageByRepository(repositoryId: string): Promise<CustomResponse> {
-    try {
-        const feedbackImages = await prisma.feedbackImage.findMany({
-            where: {
-                feedback: {
-                    repositoryId: repositoryId,
-                },
-            },
-        });
-
-        for (const image of feedbackImages) {
-            try {
-                const imagePath = path.join('public', image.url.replace(/^\/+/, ''));
-                await fs.unlink(imagePath);
-            } catch (error: any) {
-                if (error.code !== 'ENOENT') {
-                    throw error;
-                }
-            }
-        }
-
-        return { success: true, message: 'Images deleted successfully.' };
-    } catch (error: any) {
-        console.error('Failed to delete images:', error);
-        return { success: false, error: `Failed to delete images. ${error.message || 'Please try again.'}` };
-    }
-}
-
-function validateTotalSize(files: File[]) {
-    let totalSize = 0;
-    for (const file of files) {
-        if (!(file instanceof File)) {
-            return { success: false, error: 'Invalid file upload.' };
-        }
-        if (file.size > MAX_FILE_SIZE) {
-            return { success: false, error: `File "${file.name}" is too large. Max per file is 5MB.` };
-        }
-        totalSize += file.size;
-    }
-
-    if (totalSize > MAX_TOTAL_SIZE) {
-        return { success: false, error: `Total upload size too big. Max combined is ${Math.round(MAX_TOTAL_SIZE / 1024 / 1024)}MB.` }
     }
 }

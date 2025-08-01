@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 import { auth } from "@/auth";
 import { prisma } from "../prisma";
-import { deleteImageByRepository } from "../feedbacks/actions";
+import { deleteImageByRepository } from "../feedback-images/actions";
 
 const ITEMS_PER_PAGE = 10;
 
