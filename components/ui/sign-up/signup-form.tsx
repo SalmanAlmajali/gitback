@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/app/lib/utils'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../card'
 import { figtree } from '@/components/fonts'
 import { IconKey, IconLoader2, IconMail, IconUser, IconUserPlus } from '@tabler/icons-react'

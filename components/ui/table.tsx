@@ -1,4 +1,4 @@
-import { IconBookmarksOff, IconMessagesOff, IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconBookmarksOff, IconMessagesOff, IconPencil, IconPlus } from '@tabler/icons-react';
 import Link from 'next/link';
 import { figtree } from '../fonts';
 import { Separator } from './separator';

@@ -3,16 +3,11 @@
 import { auth } from "@/auth";
 import { checkForSession } from "../utils";
 import { prisma } from "../prisma";
-import { FeedbackImage, FeedbackStatus, FeedbackType } from "@prisma/client";
+import { FeedbackStatus, FeedbackType } from "@prisma/client";
 import { CustomResponse } from "../definitions";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 import { FeedbacksTableRow, FeedbackWithImages } from "./definitions";
-import path from "path";
-import { randomUUID } from "crypto";
-import fs from 'fs/promises';
-import pLimit from 'p-limit';
-import sharp from "sharp";
 import { deleteImage, saveImages } from "../feedback-images/actions";
 
 const ITEMS_PER_PAGE = 10;
