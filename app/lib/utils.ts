@@ -55,14 +55,19 @@ export function generateYAxis(
 		return { yAxisLabels: [0], topLabel: 0 };
 	}
 
+	if (max <= 1) {
+		return { yAxisLabels: [1, 0], topLabel: 1 };
+	}
+
 	const rawStep = max / targetSteps;
 	const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
 	const normalizedStep = Math.ceil(rawStep / magnitude) * magnitude;
 
 	const topLabel = Math.ceil(max / normalizedStep) * normalizedStep;
 	const yAxisLabels: number[] = [];
+
 	for (let v = topLabel; v >= 0; v -= normalizedStep) {
-		yAxisLabels.push(v / (normalizedStep >= 1000 ? normalizedStep : 1));
+		yAxisLabels.push(parseFloat(v.toFixed(1)));
 	}
 
 	return { yAxisLabels: yAxisLabels, topLabel };
@@ -89,7 +94,12 @@ export function fillMonthGaps(
 		const monthKey = d.toLocaleDateString('id-ID', {
 			month: 'short',
 		});
-		const existing = raw.find(r => r.month === d.toISOString().slice(0, 7));
+
+		const year = d.getFullYear();
+		const month = d.getMonth() + 1;
+		const formattedMonth = `${year}-${month.toString().padStart(2, '0')}`;
+
+		const existing = raw.find(r => r.month === formattedMonth);
 
 		result.push({ month: monthKey, count: existing ? existing.count : 0 });
 	}
