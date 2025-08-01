@@ -9,9 +9,10 @@ import { RenderCellFunction, TableHeadColumn } from '@/app/lib/definitions';
 import { Suspense } from 'react';
 import SkeletonTable from '@/components/ui/repositories/skeleton';
 import { formatDateToLocal, getNestedValue } from '@/app/lib/utils';
-import { IconPlus } from '@tabler/icons-react';
+import { IconArrowRight, IconPlus } from '@tabler/icons-react';
 import { getLanguageColorClass, getLanguageHexColor } from '@/app/lib/language-color-map';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
 	title: "Repositories"
@@ -27,6 +28,7 @@ const tableHead: TableHeadColumn[] = [
 	{ label: 'Last Updated (GitHub)', key: 'updatedAtGitHub', },
 	{ label: 'Added To App', key: 'createdAt', },
 	{ label: 'Last Updated (App)', key: 'updatedAt', },
+	{ label: 'Public Form', key: 'action' },
 ];
 
 const renderCell: RenderCellFunction<RepositoriesTableRow> = (
@@ -85,6 +87,17 @@ const renderCell: RenderCellFunction<RepositoriesTableRow> = (
 				return formatDateToLocal(cellValue);
 			}
 			return String(cellValue || '');
+		case 'action':
+			return (
+				<span className="flex">
+					<Link
+						href={`/user/feedback/${data.id}`}
+						className="rounded-md border p-2 bg-blue-600 hover:bg-blue-700 transition-colors"
+					>
+						<IconArrowRight className="w-5 text-white" />
+					</Link>
+				</span>
+			)
 		default:
 			return cellValue;
 	};
